@@ -21,7 +21,7 @@
 title: yxibng's blog
 email: yxibng@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  iOS开发一枚，谨以此博客记录开发中用到的一些知识，做一下积累，也方便以后茶漏补缺。
+  iOS开发一枚，谨以此博客记录开发中用到的一些知识，做一下积累，也方便以后查漏补缺。
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: yxibng
