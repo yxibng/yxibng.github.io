@@ -1,0 +1,35 @@
+---
+layout: post
+title:  "mac终端打印连接的设备"
+date:   2019-09-20 14:21:36 +0800
+categories: ios framework 
+---
+
+参考：
+
+- [iOS simulator command line tricks](https://medium.com/@ankitkumargupta/ios-simulator-command-line-tricks-ee58054d30f4)
+- [List connected ios devices](https://discuss.appium.io/t/list-connected-ios-devices/9169)
+
+
+## 显示所有连接的设备，需要自己过滤iOS真机设备
+
+```
+xcrun instruments -s devices
+```
+
+##  List all simulators created
+```
+xcrun simctl list --json
+```
+
+## Get rid of all unused simlators
+
+```
+xcrun simctl delete unavailable
+```
+
+## Record simulator video
+
+```
+xcrun simctl io booted recordVideo — type=mp4 ./test.mp4
+```
