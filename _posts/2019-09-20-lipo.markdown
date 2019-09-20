@@ -1,0 +1,39 @@
+---
+layout: post
+title:  "lipo"
+date:   2019-09-20 09:21:36 +0800
+categories: ios framework 
+---
+
+# 查看静态库支持的cpu类型
+
+``` 
+lipo -detail_info libavcodec.a
+lipo -detailed_info libavcodec.a
+```
+# 合并静态库,生成 fat cpu 架构静态库
+```
+➜  Products ls
+Release-iphoneos        Release-iphonesimulator
+
+➜  Products lipo -info Release-iphoneos/libios_webrtc.a
+Architectures in the fat file: Release-iphoneos/libios_webrtc.a are: armv7 arm64 armv7s
+
+➜  Products lipo -info Release-iphonesimulator/libios_webrtc.a
+Architectures in the fat file: Release-iphonesimulator/libios_webrtc.a are: i386 x86_64
+
+➜  Products lipo -create Release-iphoneos/libios_webrtc.a Release-iphonesimulator/libios_webrtc.a -output libios_webrtc.a
+
+➜  Products lipo -info libios_webrtc.a
+Architectures in the fat file: libios_webrtc.a are: armv7 armv7s i386 x86_64 arm64
+```
+
+
+# 移除静态库的cpu架构支持
+```
+➜  Products lipo libios_webrtc.a -remove i386 -output libios_webrtc.a
+➜  Products ls
+Release-iphoneos        Release-iphonesimulator libios_webrtc.a
+➜  Products lipo -info libios_webrtc.a
+Architectures in the fat file: libios_webrtc.a are: armv7 armv7s x86_64 arm64
+```
