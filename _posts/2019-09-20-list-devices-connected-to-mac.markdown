@@ -1,8 +1,10 @@
 ---
-layout: post
-title:  "mac终端打印连接的设备"
-date:   2019-09-20 14:21:36 +0800
-categories: ios framework 
+title: "mac终端打印连接的iOS设备"
+date: 2019-09-20 14:21:36 +0800
+categories:
+  - ios 
+tags:
+  - xcrun
 ---
 
 参考：

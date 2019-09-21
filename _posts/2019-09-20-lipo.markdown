@@ -1,8 +1,10 @@
 ---
-layout: post
-title:  "lipo"
-date:   2019-09-20 09:21:36 +0800
-categories: ios framework 
+title: "lipo"
+date: 2019-09-20 09:21:36 +0800
+categories:
+  - ios framework 
+tags:
+  - lipo
 ---
 
 # 查看静态库支持的cpu类型

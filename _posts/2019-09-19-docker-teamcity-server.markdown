@@ -1,9 +1,14 @@
 ---
-layout: post
-title:  "docker teamcity server"
-date:   2019-09-19 22:39:36 +0800
-categories: linux docker 
+title: "docker run teamcity server"
+date: 2019-09-20 14:21:36 +0800
+categories:
+  - linux
+  - docker  
+tags:
+  - linux
 ---
+
+
 ## install java
 
 ```
