@@ -8,16 +8,7 @@ tags:
 ---
 
 
-## install java
-
-```
-brew cask install java
-brew tap caskroom/versions
-brew cask install java8
-```
-
 参考： [UIAlertController is Crashed (iPad)](https://stackoverflow.com/questions/31577140/uialertcontroller-is-crashed-ipad)
-
 
 
 ```
