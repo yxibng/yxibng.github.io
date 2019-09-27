@@ -1,0 +1,82 @@
+---
+title: "libyuv"
+date: 2019-09-27 20:51:36 +0800
+categories:
+  - ios
+tags:
+  - ios
+---
+
+# libyuv
+- 源码： [https://chromium.googlesource.com/libyuv/libyuv](https://chromium.googlesource.com/libyuv/libyuv)
+- 编译 : [https://chromium.googlesource.com/libyuv/libyuv/+/HEAD/docs/getting_started.md](https://chromium.googlesource.com/libyuv/libyuv/+/HEAD/docs/getting_started.md)
+
+
+参考： 
+- [一文读懂 YUV 的采样与格式](https://glumes.com/post/ffmpeg/understand-yuv-format/)
+-  [视频存储格式YUV420 NV12 NV21 i420 YV12](https://www.jianshu.com/p/e67f79f10c65)
+
+
+## iOS 采集 4: 2: 0
+
+- kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+- kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+
+采集出来的都是双平面的nv12数据
+
+```
+//add video data output
+AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
+NSDictionary *settings = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInteger:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange], kCVPixelBufferPixelFormatTypeKey, nil];
+output.videoSettings = settings;
+```
+
+
+## get yuv from CMSampleBufferRef
+
+```
+- (void *)sampleBufferToYUV:(CMSampleBufferRef)sampleBuffer
+{
+    CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+
+    int pixelWidth = (int)CVPixelBufferGetWidth(pixelBuffer);
+    int pixelHeight = (int)CVPixelBufferGetHeight(pixelBuffer);
+
+    int src_stride = (int)CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0);
+
+    uint8_t *base_y = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
+    uint8_t *base_uv = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1);
+
+    int y_size = pixelWidth * pixelHeight;
+    int uv_size = y_size / 2;
+    int yuv420_size = y_size + uv_size;
+    
+    uint8_t *i420_yuv = malloc(yuv420_size);
+    uint8_t *i420_u = i420_yuv + y_size;
+    uint8_t *i420_v = i420_u + uv_size / 2;
+
+    int result = NV12ToI420(base_y,
+                            src_stride,
+                            base_uv,
+                            src_stride,
+                            i420_yuv,
+                            pixelWidth,
+                            i420_u,
+                            pixelWidth / 2,
+                            i420_v,
+                            pixelWidth / 2,
+                            pixelWidth,
+                            pixelHeight);
+
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+
+    if (result != 0) {
+        printf("NV12ToI420 error \n");
+        return NULL;
+    }
+	return i420_yuv;
+}
+```
+
+
