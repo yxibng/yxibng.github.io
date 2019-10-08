@@ -1,0 +1,171 @@
+---
+title: "libyuv"
+date: 2019-09-27 20:51:36 +0800
+categories:
+  - ios
+tags:
+  - ios
+---
+
+# libyuv
+
+- 源码： [https://chromium.googlesource.com/libyuv/libyuv](https://chromium.googlesource.com/libyuv/libyuv)
+- 编译 : [https://chromium.googlesource.com/libyuv/libyuv/+/HEAD/docs/getting_started.md](https://chromium.googlesource.com/libyuv/libyuv/+/HEAD/docs/getting_started.md)
+
+
+参考： 
+
+- [一文读懂 YUV 的采样与格式](https://glumes.com/post/ffmpeg/understand-yuv-format/)
+-  [视频存储格式YUV420 NV12 NV21 i420 YV12](https://www.jianshu.com/p/e67f79f10c65)
+-  [YUV格式转换中的stride](https://www.jianshu.com/p/68e05ad85490)
+
+
+## iOS 采集 `nv12`
+
+- kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+- kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+
+采集出来的都是双平面的nv12数据
+
+```
+//add video data output
+AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
+NSDictionary *settings = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInteger:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange], kCVPixelBufferPixelFormatTypeKey, nil];
+output.videoSettings = settings;
+```
+
+
+## get `yuv` from `CMSampleBufferRef` & `nv12` to `i420`
+
+```
+- (void *)sampleBufferToYUV:(CMSampleBufferRef)sampleBuffer
+{
+    CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+
+    int pixelWidth = (int)CVPixelBufferGetWidth(pixelBuffer);
+    int pixelHeight = (int)CVPixelBufferGetHeight(pixelBuffer);
+
+    int src_stride = (int)CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0);
+
+    uint8_t *base_y = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
+    uint8_t *base_uv = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1);
+
+    int y_size = pixelWidth * pixelHeight;
+    int uv_size = y_size / 2;
+    int yuv420_size = y_size + uv_size;
+    
+    uint8_t *i420_yuv = malloc(yuv420_size);
+    uint8_t *i420_u = i420_yuv + y_size;
+    uint8_t *i420_v = i420_u + uv_size / 2;
+
+    int result = NV12ToI420(base_y,
+                            src_stride,
+                            base_uv,
+                            src_stride,
+                            i420_yuv,
+                            pixelWidth,
+                            i420_u,
+                            pixelWidth / 2,
+                            i420_v,
+                            pixelWidth / 2,
+                            pixelWidth,
+                            pixelHeight);
+
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+
+    if (result != 0) {
+        printf("NV12ToI420 error \n");
+        return NULL;
+    }
+	return i420_yuv;
+}
+```
+
+## `i420` to `nv12` to `CVPixelBufferRef` to `CMSampleBufferRef`
+
+```
+- (CVPixelBufferRef)pixelBufferFromI420Data:(void *)data width:(int)width height:(int)height
+{
+    CVReturn status;
+    //get pixbuffer pool
+    CVPixelBufferPoolRef pixBufferPool = [self pixelBufferPoolWithWidth:width height:height];
+    if (!pixBufferPool) {
+        return NULL;
+    }
+
+    //create pixel buffer
+    CVPixelBufferRef pixelBuffer = nil;
+    status = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pixBufferPool, &pixelBuffer);
+    NSParameterAssert(status == kCVReturnSuccess && pixelBuffer != NULL);
+    if (status != kCVReturnSuccess) {
+        //创建buffer失败
+        return NULL;
+    }
+    //i420  to nv12
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+
+    uint8_t *base_y = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
+    uint8_t *base_uv = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1);
+
+
+    uint8_t *src_y = (uint8_t *)data;
+    uint8_t *src_u = (uint8_t *)data + width * height;
+    uint8_t *src_v = src_u + width * height / 4;
+
+    int dst_stride = (int)CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0);
+    ;
+    int convertResult = I420ToNV12(src_y,
+                                   width,
+                                   src_u,
+                                   width / 2,
+                                   src_v,
+                                   width / 2,
+                                   base_y,
+                                   dst_stride,
+                                   base_uv,
+                                   dst_stride,
+                                   width,
+                                   height);
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+    if (convertResult != 0) {
+        NSLog(@"I420ToNV12 failed: %d", convertResult);
+        CVPixelBufferRelease(pixelBuffer);
+        return NULL;
+    }
+    return (CVPixelBufferRef)CFAutorelease(pixelBuffer);
+}
+
+- (CMSampleBufferRef)sampleBufferFromPixelBuffer:(CVPixelBufferRef)pixelBuffer
+{
+    if (!pixelBuffer) {
+        return NULL;
+    }
+    
+    //不设置具体时间信息
+    CMSampleTimingInfo timing = {kCMTimeInvalid, kCMTimeInvalid, kCMTimeInvalid};
+    //获取视频信息
+    CMVideoFormatDescriptionRef videoInfo = NULL;
+    OSStatus result = CMVideoFormatDescriptionCreateForImageBuffer(NULL, pixelBuffer, &videoInfo);
+    NSParameterAssert(result == 0 && videoInfo != NULL);
+    if (result != 0) {
+        return NULL;
+    }
+
+    CMSampleBufferRef sampleBuffer = NULL;
+    result = CMSampleBufferCreateForImageBuffer(kCFAllocatorDefault, pixelBuffer, true, NULL, NULL, videoInfo, &timing, &sampleBuffer);
+    NSParameterAssert(result == 0 && sampleBuffer != NULL);
+    CFRelease(videoInfo);
+    if (result != 0) {
+        return NULL;
+    }
+    CFArrayRef attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, YES);
+    CFMutableDictionaryRef dict = (CFMutableDictionaryRef)CFArrayGetValueAtIndex(attachments, 0);
+    CFDictionarySetValue(dict, kCMSampleAttachmentKey_DisplayImmediately, kCFBooleanTrue);
+    return CFAutorelease(sampleBuffer);
+}
+
+```
+
+
+
