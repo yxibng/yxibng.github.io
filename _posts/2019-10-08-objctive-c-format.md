@@ -17,9 +17,10 @@ tags:
 1. clone 
 
 	```
- 	cd $DIR
+	cd $DIR
 	git clone https://juejin.im/post/5a6989dff265da3e2e62af2d
- 	```
+
+	```
  	
 2. install in your repo
 
