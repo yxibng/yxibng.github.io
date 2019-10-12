@@ -1,10 +1,11 @@
 ---
-title: "mac终端打印连接的iOS设备"
+title: "xcrun-mac终端打印连接的iOS设备"
 date: 2019-09-20 14:21:36 +0800
 categories:
   - ios 
 tags:
   - xcrun
+  - shell 
 ---
 
 参考：
@@ -16,7 +17,10 @@ tags:
 ## 显示所有连接的设备，需要自己过滤iOS真机设备
 
 ```
+# 所有设备,真机+模拟器
 xcrun instruments -s devices
+# 真机
+xcrun instruments -s devices | grep -v "Simulator"
 ```
 
 ##  List all simulators created
