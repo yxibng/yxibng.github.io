@@ -20,8 +20,9 @@ tags:
 -  [YUV格式转换中的stride](https://www.jianshu.com/p/68e05ad85490)
 
 
-## iOS 采集 `nv12`
+# capture `nv12` 
 
+## capture 
 - kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
 - kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
 
@@ -34,6 +35,134 @@ NSDictionary *settings = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber nu
 output.videoSettings = settings;
 ```
 
+## get `nv12` pixelBuffer
+```
+//AVCaptureVideoDataOutputSampleBufferDelegate
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
+{
+    CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+}
+
+```
+
+# create pixelbffer
+
+## use `CVPixelBufferCreate`
+```
+- (CVPixelBufferRef)createPixelBufferWithWidth:(size_t)width height:(size_t)height pixelFormat:(OSType)pixelFormat
+{
+    CVPixelBufferRef pixelBuffer = nil;
+    NSDictionary *att = @{(NSString *)kCVPixelBufferIOSurfacePropertiesKey : @{}};
+    CVReturn status =  CVPixelBufferCreate(kCFAllocatorDefault, width, height, pixelFormat, (__bridge CFDictionaryRef _Nullable)att, &pixelBuffer);
+    if (status != kCVReturnSuccess) {
+        return NULL;
+    }
+    return (CVPixelBufferRef)CFAutorelease(pixelBuffer);
+}
+
+```
+
+## use `CVPixelBufferPoolCreatePixelBuffer`
+
+```
+//need release returned CVPixelBufferRef
+- (CVPixelBufferRef)pixelBufferWithWidth:(int)width height:(int)height pixelFormat:(PixelBufferFormat)pixelFormat
+{
+    OSType type;
+    switch (pixelFormat) {
+        case PixelBufferFormat_I420:
+            type = kCVPixelFormatType_420YpCbCr8PlanarFullRange;
+            break;
+        case PixelBufferFormat_BGRA:
+            type = kCVPixelFormatType_32BGRA;
+            break;
+        case PixelBufferFormat_NV12:
+            type = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange;
+            break;
+    }
+    return [self createPixelBufferWithWidth:width height:height pixelFormat:type];
+}
+
+
+//need release returned CVPixelBufferRef
+- (CVPixelBufferRef)createPixelBufferWithWidth:(int)width height:(int)height pixelFormat:(OSType)pixelFormat
+{
+    //get pool
+    CVPixelBufferPoolRef pool = [self getPoolWithWidth:width height:height pixelFormat:pixelFormat];
+    if (!pool) {
+        return NULL;
+    }
+    
+    //create pixel buffer from pool
+    CVPixelBufferRef pixelBuffer = nil;
+    CVReturn status = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pool, &pixelBuffer);
+    if (status != kCVReturnSuccess) {
+        return NULL;
+    }
+    return pixelBuffer;
+}
+
+
+- (CVPixelBufferPoolRef)getPoolWithWidth:(int)width height:(int)height pixelFormat:(OSType)pixelFormat
+{
+    
+    NSString *key = [NSString stringWithFormat:@"%d_%d_%d",width,height,pixelFormat];
+    [self.lock lock];
+    CVPixelBufferPoolRef pool = (CVPixelBufferPoolRef)CFDictionaryGetValue(self.pools, (__bridge const void *)(key));
+    [self.lock unlock];
+    
+    if (pool) {
+        [self flushPool:pool];
+        return pool;
+    }
+    pool = [self createPixelBufferPoolWithWidth:width height:height pixelFormat:pixelFormat];
+    
+    if (!pool) {
+        return NULL;
+    }
+    [self.lock lock];
+    CFDictionarySetValue(self.pools, (__bridge const void *)(key), pool);
+    [self.lock unlock];
+    return pool;
+}
+
+
+
+// create pool
+- (CVPixelBufferPoolRef)createPixelBufferPoolWithWidth:(int)width height:(int)height pixelFormat:(OSType)pixelFormat
+{
+    CVPixelBufferPoolRef pool = nil;
+    NSDictionary *att = @{
+        (NSString *)kCVPixelBufferPixelFormatTypeKey : @(pixelFormat),
+        (NSString *)kCVPixelBufferWidthKey : @(width),
+        (NSString *)kCVPixelBufferHeightKey : @(height),
+        (NSString *)kCVPixelBufferIOSurfacePropertiesKey : @{},
+    };
+    
+    int status = CVPixelBufferPoolCreate(kCFAllocatorDefault, (__bridge CFDictionaryRef _Nullable)att, (__bridge CFDictionaryRef _Nullable)att, &pool);
+    if (status != kCVReturnSuccess) {
+        return NULL;
+    }
+    return (CVPixelBufferPoolRef)CFAutorelease(pool);
+}
+
+// flush pool free memory
+- (void)flushPool:(CVPixelBufferPoolRef)pool
+{
+    if (!pool) {
+        return;
+    }
+    CVPixelBufferPoolFlush(pool, kCVPixelBufferPoolFlushExcessBuffers);
+}
+
+```
+
+
+# `nv12` to `i420`
+
+## `nv12` to `i420` pixelBuffer
+
+## `nv12` to `i420` raw data
 
 ## get `yuv` from `CMSampleBufferRef` & `nv12` to `i420`
 
