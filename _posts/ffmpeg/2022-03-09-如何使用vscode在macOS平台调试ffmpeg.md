@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "如何使用vscode在macOS平台调试ffmpeg"
 date: 2022-03-09 
@@ -71,11 +70,31 @@ ffmpeg -f avfoundation -list_devices true -i ""
 
 附上链接：lldb 使用教程 [Tutorial](https://lldb.llvm.org/use/tutorial.html)
 
+
+
+# 调试ffmpeg/doc/example
+
+```shell
+make examples 
+```
+
+在ffmpeg/doc/example目录下, 以`_g`结尾的就是可以调试的
+
+![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468208261531646820825284.png)
+
+配置launch.json
+
+![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468210321531646821031535.png)
+
+开始调试吧
+
+![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468211571521646821156644.png)
+
+
+
 ## 备注：m1 芯片的mac 如果遇到调试问题
 
 [ ERROR: Unable to start debugging. Unexpected LLDB output from command "-exec-run". process exited with status -1 (attach failed ((os/kern) invalid argument)) ](https://github.com/microsoft/vscode-cpptools/issues/6779)
-
-
 
 解决办法：
 
