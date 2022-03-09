@@ -27,12 +27,12 @@ make -j `nproc`
 make install
 ```
 
-![image-20210422182014703.png](:/ceaddb1d1dd2473496faad4c1883ba1d)
+![image-20210422182014703.png](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/1646798696028ceaddb1d1dd2473496faad4c1883ba1d.png)
 以`_g`结尾的就是可以调试的程序`ffmpeg_g, ffplay_g, ffprobe_g`
 
 ## vscode配置
 
-![image-20210422181630503.png](:/e47d61888a5e4095b6b1fd9c30246471)
+![image-20210422181630503.png](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/1646798890870e47d61888a5e4095b6b1fd9c30246471.png)
 
 如下命令：
 
@@ -67,7 +67,7 @@ ffmpeg -f avfoundation -list_devices true -i ""
 ```
 
 打上断点，点击运行，就可以愉快的调试了
-![](/Users/yxb/Library/Application%20Support/marktext/images/2022-03-09-11-05-59-image.png)
+![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/164679893487073e861799f104c449a57f809f7e7c1e1.png)
 
 附上链接：lldb 使用教程 [Tutorial](https://lldb.llvm.org/use/tutorial.html)
 
