@@ -6,10 +6,6 @@ tag: ffmpeg
 
 ---
 
-# 如何使用vscode在macOS平台调试ffmpeg
-
-# [使用xcode 调试 ffmepg](https://blog.csdn.net/lipeiran1987/article/details/89553022?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.channel_param&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.channel_param)
-
 # 使用vscode调试ffmpeg
 
 准备知识：[Debug C++ in Visual Studio Code](https://code.visualstudio.com/docs/cpp/cpp-debug)
@@ -23,7 +19,6 @@ ffmpeg 源码 https://github.com/FFmpeg/FFmpeg.git
 ```bash
 ./configure  --disable-optimizations --disable-stripping --enable-debug=3 --disable-doc
 make -j `nproc`
-make install
 ```
 
 ![image-20210422182014703.png](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/1646798696028ceaddb1d1dd2473496faad4c1883ba1d.png)
@@ -70,8 +65,6 @@ ffmpeg -f avfoundation -list_devices true -i ""
 
 附上链接：lldb 使用教程 [Tutorial](https://lldb.llvm.org/use/tutorial.html)
 
-
-
 # 调试ffmpeg/doc/example
 
 ```shell
@@ -90,8 +83,6 @@ make examples
 
 ![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468211571521646821156644.png)
 
-
-
 ## 备注：m1 芯片的mac 如果遇到调试问题
 
 [ ERROR: Unable to start debugging. Unexpected LLDB output from command "-exec-run". process exited with status -1 (attach failed ((os/kern) invalid argument)) ](https://github.com/microsoft/vscode-cpptools/issues/6779)
@@ -105,5 +96,3 @@ make examples
 > Now if you would try to debug then, VSCode will make use of that extension and should be able to debug your programs as it was to be done by the native debugger.
 
 > I am personally using it on my M1 chip MacBook Air, and it works perfectly fine. According to me, It's much easier to implement than other workarounds present at the moment.
-
-
