@@ -19,21 +19,21 @@ make -j `nproc`
 
 以`_g`结尾的就是可以调试的程序`ffmpeg_g, ffplay_g, ffprobe_g`
 
-
-
 ## Xcode 配置
 
-![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468353617721646835361601.png)
+![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468770121471646877011522.png)
 
-![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468354277721646835427739.png)
+![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468770571461646877056550.png)
 
 把 ffmpeg 目录拖进工程，等待添加完成，可能时间较久
 
 ![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468356217741646835620857.png)
 
-![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468357227751646835721928.png)
+![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468772051421646877204301.png)等待加载完毕
 
-![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468358397761646835839545.png)
+![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468780312171646878030941.png)
+
+
 
 添加target， 比如说调试`ffplay_g`
 
@@ -69,14 +69,6 @@ make examples
 ![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468370517811646837051618.png)
 
 与调试ffplay_g一样，添加target，配置路径，配置可执行目标，添加参数，愉快地调试吧！
-
-
-
-
-
-
-
-
 
 ---
 
