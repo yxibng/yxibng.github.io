@@ -55,8 +55,6 @@ encode_video_g 接受两个参数，
 
 2. 编码器名字（libx264 libx264rgb h264_videotoolbox）
 
-
-
 我们使用h264编码器，查看ffmpeg 支持的h264编码器
 
 ```shell
@@ -116,7 +114,7 @@ int main(int argc, char **argv)
     c->time_base = (AVRational){1, 25};
     /* 编码帧率 25 帧 */
     c->framerate = (AVRational){25, 1};
-    
+
     /* 关键帧间隔，每10帧产生一个关键帧, 如果frame->pict_type 被设置为AV_PICTURE_TYPE_I
      gop_size的值会被忽略，编码器不产出B帧和P帧，只会编码I帧
      */
@@ -215,7 +213,7 @@ int main(int argc, char **argv)
      */
     if (codec->id == AV_CODEC_ID_MPEG1VIDEO || codec->id == AV_CODEC_ID_MPEG2VIDEO)
         fwrite(endcode, 1, sizeof(endcode), f);
-    
+
     //关闭文件
     fclose(f);
     //释放资源
@@ -244,8 +242,6 @@ int main(int argc, char **argv)
 8. 重新编码器，将剩余数据读出
 
 9. 关闭文件，释放资源
-
-
 
 ### encode
 
@@ -289,8 +285,6 @@ static void encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt,
 }
 ```
 
-
-
 1. 调用   avcodec_send_frame 给编码器送frame
 
 2. 循环调用avcodec_receive_packet 从编码器读pkt
@@ -302,9 +296,13 @@ static void encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt,
 3. 将编码后数据写入文件
 
 4. 取消引用pkt
-   
-   
 
+最后输出的文件，可以使用ffplay 进行播放
 
+```
+➜  /tmp ffplay -i encode_video.h264
+```
+
+![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16469965503041646996550013.png)
 
 
