@@ -239,7 +239,7 @@ int main(int argc, char **argv)
 
 7. 编码1秒钟的数据
 
-8. 重新编码器，将剩余数据读出
+8. 冲洗编码器，将剩余数据读出
 
 9. 关闭文件，释放资源
 
@@ -304,5 +304,3 @@ static void encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt,
 ```
 
 ![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16469965503041646996550013.png)
-
-
