@@ -1,19 +1,13 @@
 ---
 layout: post
 title: "ffmpeg example 4.视频文件封装和编码"
-date: 2022-03-12 
+date: 2022-03-13 
 tag: ffmpeg
 ---
 
-
-
 今天学习 `ffmpeg/doc/examples/muxing.c`
 
-
-
 该程序接受一个参数，指定输出的文件的路径，例如`/tmp/mux.mp4`,`/tmp/mux.mov`。 文件名的后缀会用来推测生成的AVFormatContext的格式，如果没有指定，就使用`mpeg`。使用fmt 默认的视频编码器和音频编码器，编码10秒钟的音视频数据，交替写入文件。
-
-
 
 操作封装需要操作`AVFormatContext`
 
@@ -47,7 +41,6 @@ tag: ffmpeg
 我们看看add_stream做了什么
 
 ```c
-
 /* Add an output stream. */
 static void add_stream(OutputStream *ost, AVFormatContext *oc,
                        const AVCodec **codec,
@@ -97,8 +90,6 @@ static void add_stream(OutputStream *ost, AVFormatContext *oc,
 }
 ```
 
-
-
 1. 根据codec_id找到AVCodec
 
 2. 调用avformat_new_stream创建stream
@@ -109,11 +100,9 @@ static void add_stream(OutputStream *ost, AVFormatContext *oc,
 
 5. 设置stream的time_base
 
-6.  处理一下 stream headers 的标志位
+6. 处理一下 stream headers 的标志位
 
-
-
-## 音视频流创建好了，写一步为写入准备
+## 音视频流创建好了，下一步为写入准备
 
 1. 上面创建好了stream, 创建了编码器上下文。open_video/open_audio继续为写入做准备
 
@@ -195,7 +184,7 @@ static void open_video(AVFormatContext *oc, const AVCodec *codec,
 }
 ```
 
-1.  打开编码器
+1. 打开编码器
 
 2. 申请资源，创建一个AVFrame用于存储编码前数据
 
@@ -336,8 +325,6 @@ static int write_frame(AVFormatContext *fmt_ctx, AVCodecContext *c,
 
 6. 返回写入结果。当AVFrame为空时，会冲洗编码器，ret = AVERROR_EOF， 返回1， 结束写入
 
-
-
 frame的每一帧数据，是来自于get_video_frame方法, 填充的假数据
 
 ```c
@@ -393,10 +380,6 @@ static AVFrame *get_video_frame(OutputStream *ost)
 4. 更新frame的pts
 
 5. 返回生成的frame
-
-
-
-
 
 write_audio_frame
 
@@ -469,8 +452,6 @@ static int write_audio_frame(AVFormatContext *oc, OutputStream *ost)
 
 5. 调用write_frame编码，将数据写入文件
 
-
-
 ## 总结：
 
 学习了通过应用libavformat将音视频数据编码封装到文件中
@@ -487,22 +468,4 @@ static int write_audio_frame(AVFormatContext *oc, OutputStream *ost)
 
 6. 关闭编解码器，结束写文件
 
-
-
 # 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
