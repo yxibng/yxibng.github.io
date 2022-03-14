@@ -83,6 +83,51 @@ make examples
 
 ![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468211571521646821156644.png)
 
+## 修改代码重新编译
+
+ 例如你在调试的时候，修改了ffmpeg的源码，想调试一下更改后的代码，需要重新编译生成。
+
+```
+cd ffmpeg
+make -j 16
+make examples
+```
+
+你想自动化这个过程，在调试之前自动编译，如何实现呢？
+
+#### 配置 `prelaunchTask`
+
+1. 在tasks.json中添加一个task
+   
+   ```
+   {
+       // See https://go.microsoft.com/fwlink/?LinkId=733558
+       // for the documentation about the tasks.json format
+       "version": "2.0.0",
+       "tasks": [
+           {
+               "label": "make",
+               "type": "shell",
+               "command": "make -j 16; make examples",
+               "problemMatcher": [],
+               "group": {
+                   "kind": "build",
+                   "isDefault": true
+               },
+               "options": {
+                   "cwd": "${workspaceFolder}"
+               }
+           }
+       ]
+   }
+   ```
+
+2. 在launch.json中配置prelaunchTask
+   
+   ![](https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16472372959411647237295151.png)
+
+然后修改代码，点击调试， vscode 自动执行make，编译修改后的文件，重新生成可执行程序。然后就可以愉快地修改代码，调试，修改也会即时生效。
+
 ## 备注：m1 芯片的mac 如果遇到调试问题
 
 [ ERROR: Unable to start debugging. Unexpected LLDB output from command "-exec-run". process exited with status -1 (attach failed ((os/kern) invalid argument)) ](https://github.com/microsoft/vscode-cpptools/issues/6779)
