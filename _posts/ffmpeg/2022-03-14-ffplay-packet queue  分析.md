@@ -11,27 +11,16 @@ tag: ffmpeg
 ---
 
 ffplay  用 PacketQueue 来保存解封装后的数据，即AVPacket。
+定义MyAVPacketList表示队列中的元素，这里命名为MyAVPacketNode可能更合理。
 
-ffplay首先定义了一个结构体MyAVPacketList：
-
-```
+```c
 typedef struct MyAVPacketList {
     //待解码的数据
     AVPacket *pkt;
     //pkt序列号
     int serial;
 } MyAVPacketList;
-```
 
-可以理解为是队列的一个节点。
-
-> 所以这里我认为命名为MyAVPacketNode更为合理
-
-serial字段主要用于标记当前节点的序列号，ffplay中多处用到serial的概念，一般用于区分是否连续数据。在后面的代码分析中我们还会看到它的作用。
-
-接着定义另一个结构体`PacketQueue`：
-
-```
 typedef struct PacketQueue {
     /* ffmpeg封装的队列数据结构，先入先出 */
     AVFifo *pkt_list;
@@ -365,7 +354,7 @@ static void packet_queue_flush(PacketQueue *q)
 
 而对于serial的操作不是设置为0，而是在原来的基础上增加了1，为什么呢？
 
-总结：
+## 总结：
 
 1. ffplay 用PacketQueue来保存解封装后的AVPacket
 
