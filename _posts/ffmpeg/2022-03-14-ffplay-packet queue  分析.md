@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "ffmpeg packet queue 分析"
 date: 2022-03-14
@@ -53,7 +52,7 @@ typedef struct PacketQueue {
 } PacketQueue;
 ```
 
-结构体的第一个成员是AVFifo指针类型的。FFmpeg 定义了AVFifo结构体和操作这个结构体的一些列函数，实现了队列的数据结构。PacketQueue 是封装了AVFifo 队列，来管理MyAVPacketList，进而管理解封装后的AVPacket的。
+结构体的第一个成员是AVFifo指针类型的。FFmpeg 定义了AVFifo结构体和操作这个结构体的一系列函数，实现了队列的数据结构。PacketQueue 是封装了AVFifo 实例，来管理MyAVPacketList，进而管理解封装后的AVPacket的。
 
 ## AVFifo
 
