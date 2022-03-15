@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "ffmpeg packet queue 分析"
+title: "ffplay packet queue 分析"
 date: 2022-03-14
 tag: ffmpeg
 
