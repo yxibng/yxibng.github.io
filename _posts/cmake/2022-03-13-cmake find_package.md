@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "cmake find_package"
 date: 2022-03-13
@@ -12,8 +11,6 @@ tag: cmake
 - 官方文档  [find_package](https://cmake.org/cmake/help/latest/command/find_package.html#id3)
 
 - [Cmake之深入理解find_package()的用法](https://zhuanlan.zhihu.com/p/97369704)
-
-
 
 ## 使用
 
@@ -46,8 +43,6 @@ find_package 有两种搜索模式
 
 - 搜索`<lowercasePackageName>-config-version.cmake`或者`<PackageName>ConfigVersion.cmake`
 
-
-
 如果找到
 
 - `<PackageName>_FOUND` 为true
@@ -60,8 +55,6 @@ find_package 有两种搜索模式
 
 - `<PackageName>_FOUND` 为false
 
-
-
 ## 如何写`Find<PackageName>.cmake`
 
 [wasmint/FindSDL2.cmake at master · WebAssembly/wasmint · GitHub](https://github.com/WebAssembly/wasmint/blob/master/cmake/FindSDL2.cmake)
@@ -73,5 +66,3 @@ find_package 有两种搜索模式
 3. 通过[FindPackageHandleStandardArgs](https://cmake.org/cmake/help/latest/module/FindPackageHandleStandardArgs.html)导出变量
 
 通过CMAKE_MODULE_PATH指定路径，就可以通过find_package命令使用该三方库的头文件和库文件了。
-
-
