@@ -266,6 +266,7 @@ target_link_libraries(myexe PRIVATE MathFunctions::MathFunctions)
 导出配置，不应该引用绝对路径，应当关联相对路径，这样，无论安装在哪里，都可以通过config文件正确索引到库。
 
 1. 不应当显示的依赖`CMAKE_INSTALL_PREFIX`
+
 ```
 target_include_directories(tgt INTERFACE
   # Wrong, not relocatable:
@@ -277,7 +278,9 @@ target_include_directories(tgt INTERFACE
   $<INSTALL_INTERFACE:include/TgtName>
 )
 ```
+
 2. 可以使用`$<INSTALL_PREFIX> generator expression`
+
 ```
 target_include_directories(tgt INTERFACE
   # Ok, relocatable:
