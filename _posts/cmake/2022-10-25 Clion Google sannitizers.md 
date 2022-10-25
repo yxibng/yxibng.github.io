@@ -1,0 +1,232 @@
+---
+layout: post
+title: "Clion Google sanitizers"
+date: 2022-03-13
+tag: cmake, asan
+---
+
+参考： [Google sanitizers](https://www.jetbrains.com/help/clion/google-sanitizers.html)
+
+# sanitizers 是什么
+[sanitizers](https://github.com/google/sanitizers) 是 google 开源的用于动态代码分析的套件。
+包含以下几个组件：
+
+- AddressSanitizer (ASan)
+- LeakSanitizer (LSan)
+- ThreadSanitizer (TSan)
+- UndefinedBehaviorSanitizer (UBSsan)
+- MemorySanitizer (MSan)
+
+sanitizers 最低支持clang 3.1 和 gcc 4.8。
+所有的sanitizers在Linux x86_64都支持。
+macOS 上支持AddressSanitizer,LeakSanitizer, ThreadSanitizer, 和 UndefinedBehaviorSanitizer,
+不支持MemorySanitizer。
+
+由于sanitizers是基于编译器指令，当你想要使用sanitizers前，需要重现编译你的工程。
+
+# 配置clion 支持 Sanitizers
+## 添加编译器flags
+
+**cmake工程**
+在`CMakeLists.txt`，添加`CMAKE_CXX_FLAGS` 或 `CMAKE_C_FLAGS`
+```
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=[sanitizer_name] [additional_options] [-g] [-OX]")
+
+```
+
+其中`[sanitizer_name]`是以下几种：
+
+- `address` for AddressSanitizer
+- `leak` for LeakSanitizer
+- `thread` for ThreadSanitizer
+- `undefined` for UndefinedBehaviorSanitizer (other options are also available, see the UBSan section)
+- `memory` for MemorySanitizer 
+
+`[Additional_flags]`是其他编译器flags，例如： 
+
+- `-fno-omit-frame-pointer`
+- `fsanitize-recover/fno-sanitize-recover`
+- `-fsanitize-blacklist`
+
+`-g` 可以在警告信息中包含文件名和行号。
+
+ `-OX` 代表编译器优化的等级。
+
+ 参考： [CommandGuide/clang.html](https://clang.llvm.org/docs/CommandGuide/clang.html)
+
+ ![](https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16667151036111666715102882.png)
+
+
+
+**非cmake工程**
+
+例如Makefile工程，需要在编译和链接阶段都要指定flags。
+![](https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16667093659291666709365830.png)
+
+**clion 如何给Sanitizers调整配置**
+
+通过Settings / Preferences | Build, Execution, Deployment | Dynamic Analysis Tools | Sanitizers， 然后在对话框中修改对应的配置
+![](https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16667108337781666710833040.png)
+
+*运行时flags*
+
+1. 可以单独指定例如, AddressSanitizer 添加了一个flag `detect_stack_use_after_return=false`
+2. 如果在环境变量里有`ASAN/MSAN/LSAN/TSAN_OPTIONS`, 可以通过`Import flags from existing environment variables`按钮快速从环境变量导入flags
+
+关于运行时flags， 参考：
+
+- [SanitizerCommonFlags](https://github.com/google/sanitizers/wiki/SanitizerCommonFlags)
+- [AddressSanitizerFlags](https://github.com/google/sanitizers/wiki/AddressSanitizerFlags)
+- [ThreadSanitizerFlags](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags)
+
+
+*使用可视化来分析 Sanitizers 的输出*
+要求clang >= 3.8.0 或 gcc >= 5.0.0
+![](https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16667115017681666711501222.png)
+
+如果想让 Sanitizers 将地址符号化，转换为代码位置，需要将 [llvm-symbolizer](https://llvm.org/docs/CommandGuide/llvm-symbolizer.html)添加到环境变量中。
+
+mac上安装llvm 套件，里面会有 `llvm-symbolizer` 工具。
+
+```
+brew install llvm
+```
+添加到环境中
+```
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+```
+
+# AddressSanitizer
+
+主要用来检测内存错误，有以下几种类型：
+
+- Heap-, stack-, and global buffer overflow
+- Use-after-free (dangling pointer dereference)
+- Use-after-scope -fsanitize-address-use-after-scope
+- Use-after-return (pass detect_stack_use_after_return=1 to ASAN_OPTIONS)
+- Double free, invalid free
+- Initialization order bugs
+
+例如下面的代码会造成全局缓冲区溢出
+
+```
+int global_array[100] = {-1};
+
+int main(int argc, char **argv) {
+    return global_array[argc + 100];  // global buffer overflow
+}
+```
+
+当编译时带上 `-fsanitize=address -fno-omit-frame-pointer -O1`, 运行的时候，会由于 AddressSanitizer 遇到`global buffer overflow detected` 返回非0而退出。
+![](https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16667125917511666712591242.png)
+
+要想在检测到错误继续运行，可以给编译器flags `-fsanitize-recover=address`，同时给ASAN_OPTIONS配置 `halt_on_error=false` 
+
+
+# LeakSanitizer
+用来检测内存泄漏。可以单独使用，也可以结合AddressSanitizer一起使用。
+
+**结合 AddressSanitizer 使用**
+给 ASAN_OPTIONS 设置 `detect_leaks=1`, 不使用设置`detect_leaks=0`
+
+**单独使用**
+给编译器flags中指定`-fsanitize=leak`
+
+下面的代码会造成内存泄漏
+
+```
+int main(){
+    int *x = new int(10);
+    return 0;
+}
+```
+
+被 LSan 检测到：
+
+![](https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16667130646921666713064530.png)
+
+## ThreadSanitizer
+
+用来做数据竞争的检测。通常是多线程访问同一块内存不加锁，并且至少有一个线程在做写的操作。
+
+如下代码：
+
+```
+#include <pthread.h>
+#include <stdio.h>
+
+int Global;
+
+void *Thread1(void *x) {
+    Global++;
+    return NULL;
+}
+
+void *Thread2(void *x) {
+    Global--;
+    return NULL;
+}
+
+int main() {
+    pthread_t t[2];
+    pthread_create(&t[0], NULL, Thread1, NULL);
+    pthread_create(&t[1], NULL, Thread2, NULL);
+    pthread_join(t[0], NULL);
+    pthread_join(t[1], NULL);
+}
+```
+
+编译的时候，指定 `-fsanitize=thread -fPIE -pie -g`, 数据竞争会被 TSan 检测到
+![](https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16667133028741666713302812.png)
+
+# UndefinedBehaviourSanitizer﻿
+
+运行时检测未定义行为，例如：
+
+- 除零操作
+- 空指针解引用
+- 或者是使用未初始化的非静态变量
+
+可以指定单个的未定义行为，完成列表参考 [clang.llvm.org](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html#ubsan-checks)。
+也可以使用聚合类型的未定义行为：
+
+- `-fsanitize=undefined`
+- `-fsanitize=integer`
+- `-fsanitize=nullability`
+
+下面的代码中产生了未定义的移位运算操作:
+
+```
+int main() {
+    int i = 2048;
+    i <<= 28;
+    return 0;
+}
+```
+![](https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16667141077671666714107706.png)
+
+使用 `-fsanitize=undefined` 或者 `-fsanitize=shift` 编译运行，会产生警告，但能正常运行。
+使用 `-fno-sanitize-recover`, 当检测到未定义行为，会让程序终止。
+
+# MemorySanitizer﻿
+
+检测变量未初始化就被读取。具体是堆或者栈空间申请了内存，未被初始化写入，先背读取的行为。
+
+注意： **MSan is only available in Clang for Linux x86_64 targets.**
+
+编译时传递 `-fsanitize=memory -fPIE -pie -fno-omit-frame-pointer -g` 以及 `-fno-optimize-sibling-calls` 还有 `-O1`
+
+下面的代码，申请了内存，未初始化就开始读取：
+
+```
+int main(int argc, char** argv) {
+    int* a = new int[10];
+    a[5] = 0;
+    if (a[argc])
+        std::cout << a[3];
+    return 0;
+}
+```
+在 Linux x86_64 可以被 Msan 检测到 
+
+![](https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16667144726591666714472469.png)
