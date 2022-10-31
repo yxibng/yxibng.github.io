@@ -49,7 +49,7 @@ mdfind .workflow
 
 ## 使用
 
-工程根目录，创建 `.clang-format` 文件
+用户主目录，创建 `.clang-format` 文件
 
 ```
 clang-format -style=google -dump-config > .clang-format
