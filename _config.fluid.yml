@@ -1,0 +1,9 @@
+navbar:
+  blog_title: yxibng
+
+
+about:
+  name: "yxibng"
+  intro: "iOS、C、C++"
+  icons:
+    - { class: 'iconfont icon-github-fill', link: 'https://github.com/yxibng', tip: 'GitHub' }
