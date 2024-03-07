@@ -1,0 +1,682 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="yxibng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="使用vscode调试ffmpeg准备知识：Debug C++ in Visual Studio Code ffmpeg 源码 https:&#x2F;&#x2F;github.com&#x2F;FFmpeg&#x2F;FFmpeg.git ffmpeg 配置, 使其支持调试关于-g3相关知识gcc-g-vs-g3-gdb-flag-what-is-the-difference 12.&#x2F;configure  --disable-optim">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何使用vscode在macOS平台调试ffmpeg">
+<meta property="og:url" content="https://yxibng.github.io/2022/03/09/ffmpeg/2022-03-09-%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8vscode%E5%9C%A8macOS%E5%B9%B3%E5%8F%B0%E8%B0%83%E8%AF%95ffmpeg/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:description" content="使用vscode调试ffmpeg准备知识：Debug C++ in Visual Studio Code ffmpeg 源码 https:&#x2F;&#x2F;github.com&#x2F;FFmpeg&#x2F;FFmpeg.git ffmpeg 配置, 使其支持调试关于-g3相关知识gcc-g-vs-g3-gdb-flag-what-is-the-difference 12.&#x2F;configure  --disable-optim">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/1646798696028ceaddb1d1dd2473496faad4c1883ba1d.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/1646798890870e47d61888a5e4095b6b1fd9c30246471.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/164679893487073e861799f104c449a57f809f7e7c1e1.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468208261531646820825284.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468210321531646821031535.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468211571521646821156644.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16472372959411647237295151.png">
+<meta property="article:published_time" content="2022-03-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-06T11:53:13.565Z">
+<meta property="article:author" content="yxibng">
+<meta property="article:tag" content="ffmpeg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/1646798696028ceaddb1d1dd2473496faad4c1883ba1d.png">
+  
+  
+  
+  <title>如何使用vscode在macOS平台调试ffmpeg - yxibng</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"yxibng.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>yxibng</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="如何使用vscode在macOS平台调试ffmpeg"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-03-09 00:00" pubdate>
+          2022年3月9日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          536 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          5 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">如何使用vscode在macOS平台调试ffmpeg</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="使用vscode调试ffmpeg"><a href="#使用vscode调试ffmpeg" class="headerlink" title="使用vscode调试ffmpeg"></a>使用vscode调试ffmpeg</h1><p>准备知识：<a target="_blank" rel="noopener" href="https://code.visualstudio.com/docs/cpp/cpp-debug">Debug C++ in Visual Studio Code</a></p>
+<p>ffmpeg 源码 <a target="_blank" rel="noopener" href="https://github.com/FFmpeg/FFmpeg.git">https://github.com/FFmpeg/FFmpeg.git</a></p>
+<h2 id="ffmpeg-配置-使其支持调试"><a href="#ffmpeg-配置-使其支持调试" class="headerlink" title="ffmpeg 配置, 使其支持调试"></a>ffmpeg 配置, 使其支持调试</h2><p>关于<code>-g3</code>相关知识<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/10475040/gcc-g-vs-g3-gdb-flag-what-is-the-difference">gcc-g-vs-g3-gdb-flag-what-is-the-difference</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">./configure  --disable-optimizations --disable-stripping --enable-debug=3 --disable-doc<br>make -j `<span class="hljs-built_in">nproc</span>`<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/1646798696028ceaddb1d1dd2473496faad4c1883ba1d.png" srcset="/img/loading.gif" lazyload alt="image-20210422182014703.png"><br>以<code>_g</code>结尾的就是可以调试的程序<code>ffmpeg_g, ffplay_g, ffprobe_g</code></p>
+<h2 id="vscode配置"><a href="#vscode配置" class="headerlink" title="vscode配置"></a>vscode配置</h2><p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/1646798890870e47d61888a5e4095b6b1fd9c30246471.png" srcset="/img/loading.gif" lazyload alt="image-20210422181630503.png"></p>
+<p>如下命令：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-comment"># macOS上列出所有的音视频设备</span><br><span class="hljs-attribute">ffmpeg</span> -f avfoundation -list_devices <span class="hljs-literal">true</span> -i <span class="hljs-string">&quot;&quot;</span><br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>launch.json 对应的配置</p>
+</blockquote>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs dart">&#123;<br>    <span class="hljs-comment">// Use IntelliSense to learn about possible attributes.</span><br>    <span class="hljs-comment">// Hover to view descriptions of existing attributes.</span><br>    <span class="hljs-comment">// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br>    <span class="hljs-string">&quot;version&quot;</span>: <span class="hljs-string">&quot;0.2.0&quot;</span>,<br>    <span class="hljs-string">&quot;configurations&quot;</span>: [<br>        &#123;<br>            <span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;(lldb) Launch&quot;</span>,<br>            <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;cppdbg&quot;</span>,<br>            <span class="hljs-string">&quot;request&quot;</span>: <span class="hljs-string">&quot;launch&quot;</span>,<br>            <span class="hljs-string">&quot;program&quot;</span>: <span class="hljs-string">&quot;<span class="hljs-subst">$&#123;workspaceFolder&#125;</span>/ffmpeg_g&quot;</span>,<br>            <span class="hljs-string">&quot;args&quot;</span>: [<span class="hljs-string">&quot;-f&quot;</span>, <span class="hljs-string">&quot;avfoundation&quot;</span>, <span class="hljs-string">&quot;-list_devices&quot;</span>, <span class="hljs-string">&quot;true&quot;</span>, <span class="hljs-string">&quot;-i&quot;</span>, <span class="hljs-string">&quot;\&quot;\&quot;&quot;</span>],<br>            <span class="hljs-string">&quot;stopAtEntry&quot;</span>: <span class="hljs-keyword">false</span>,<br>            <span class="hljs-string">&quot;cwd&quot;</span>: <span class="hljs-string">&quot;<span class="hljs-subst">$&#123;workspaceFolder&#125;</span>&quot;</span>,<br>            <span class="hljs-string">&quot;environment&quot;</span>: [],<br>            <span class="hljs-string">&quot;externalConsole&quot;</span>: <span class="hljs-keyword">false</span>,<br>            <span class="hljs-string">&quot;MIMode&quot;</span>: <span class="hljs-string">&quot;lldb&quot;</span><br>        &#125;<br>    ]<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>打上断点，点击运行，就可以愉快的调试了<br><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/164679893487073e861799f104c449a57f809f7e7c1e1.png" srcset="/img/loading.gif" lazyload></p>
+<p>附上链接：lldb 使用教程 <a target="_blank" rel="noopener" href="https://lldb.llvm.org/use/tutorial.html">Tutorial</a></p>
+<h1 id="调试ffmpeg-doc-example"><a href="#调试ffmpeg-doc-example" class="headerlink" title="调试ffmpeg&#x2F;doc&#x2F;example"></a>调试ffmpeg&#x2F;doc&#x2F;example</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">make examples <br></code></pre></td></tr></table></figure>
+
+<p>在ffmpeg&#x2F;doc&#x2F;example目录下, 以<code>_g</code>结尾的就是可以调试的</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468208261531646820825284.png" srcset="/img/loading.gif" lazyload></p>
+<p>配置launch.json</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468210321531646821031535.png" srcset="/img/loading.gif" lazyload></p>
+<p>开始调试吧</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468211571521646821156644.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="修改代码重新编译"><a href="#修改代码重新编译" class="headerlink" title="修改代码重新编译"></a>修改代码重新编译</h2><p> 例如你在调试的时候，修改了ffmpeg的源码，想调试一下更改后的代码，需要重新编译生成。</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs vim"><span class="hljs-keyword">cd</span> ffmpeg<br><span class="hljs-keyword">make</span> -<span class="hljs-keyword">j</span> <span class="hljs-number">16</span><br><span class="hljs-keyword">make</span> examples<br></code></pre></td></tr></table></figure>
+
+<p>你想自动化这个过程，在调试之前自动编译，如何实现呢？</p>
+<h4 id="配置-prelaunchTask"><a href="#配置-prelaunchTask" class="headerlink" title="配置 prelaunchTask"></a>配置 <code>prelaunchTask</code></h4><ol>
+<li><p>在tasks.json中添加一个task</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs dart">&#123;<br>    <span class="hljs-comment">// See https://go.microsoft.com/fwlink/?LinkId=733558</span><br>    <span class="hljs-comment">// for the documentation about the tasks.json format</span><br>    <span class="hljs-string">&quot;version&quot;</span>: <span class="hljs-string">&quot;2.0.0&quot;</span>,<br>    <span class="hljs-string">&quot;tasks&quot;</span>: [<br>        &#123;<br>            <span class="hljs-string">&quot;label&quot;</span>: <span class="hljs-string">&quot;make&quot;</span>,<br>            <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;shell&quot;</span>,<br>            <span class="hljs-string">&quot;command&quot;</span>: <span class="hljs-string">&quot;make -j 16; make examples&quot;</span>,<br>            <span class="hljs-string">&quot;problemMatcher&quot;</span>: [],<br>            <span class="hljs-string">&quot;group&quot;</span>: &#123;<br>                <span class="hljs-string">&quot;kind&quot;</span>: <span class="hljs-string">&quot;build&quot;</span>,<br>                <span class="hljs-string">&quot;isDefault&quot;</span>: <span class="hljs-keyword">true</span><br>            &#125;,<br>            <span class="hljs-string">&quot;options&quot;</span>: &#123;<br>                <span class="hljs-string">&quot;cwd&quot;</span>: <span class="hljs-string">&quot;<span class="hljs-subst">$&#123;workspaceFolder&#125;</span>&quot;</span><br>            &#125;<br>        &#125;<br>    ]<br>&#125;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>在launch.json中配置prelaunchTask</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16472372959411647237295151.png" srcset="/img/loading.gif" lazyload></p>
+</li>
+</ol>
+<p>然后修改代码，点击调试， vscode 自动执行make，编译修改后的文件，重新生成可执行程序。然后就可以愉快地修改代码，调试，修改也会即时生效。</p>
+<h2 id="备注：m1-芯片的mac-如果遇到调试问题"><a href="#备注：m1-芯片的mac-如果遇到调试问题" class="headerlink" title="备注：m1 芯片的mac 如果遇到调试问题"></a>备注：m1 芯片的mac 如果遇到调试问题</h2><p><a target="_blank" rel="noopener" href="https://github.com/microsoft/vscode-cpptools/issues/6779"> ERROR: Unable to start debugging. Unexpected LLDB output from command “-exec-run”. process exited with status -1 (attach failed ((os&#x2F;kern) invalid argument)) </a></p>
+<p>解决办法：</p>
+<p>使用 <code>CodeLLDB debugger</code>插件，而不是vc code 原生的调试插件</p>
+<blockquote>
+<p>I would suggest you to use CodeLLDB debugger (vadimcn.vscode-lldb). It’s an extension in VSCode and works exactly like the native debugger in VSCode. For its setup, you just need to change the configuration of your launch.json file with the one provided by the extension. And that should do the trick.</p>
+</blockquote>
+<blockquote>
+<p>Now if you would try to debug then, VSCode will make use of that extension and should be able to debug your programs as it was to be done by the native debugger.</p>
+</blockquote>
+<blockquote>
+<p>I am personally using it on my M1 chip MacBook Air, and it works perfectly fine. According to me, It’s much easier to implement than other workarounds present at the moment.</p>
+</blockquote>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ffmpeg/" class="print-no-link">#ffmpeg</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>如何使用vscode在macOS平台调试ffmpeg</div>
+      <div>https://yxibng.github.io/2022/03/09/ffmpeg/2022-03-09-如何使用vscode在macOS平台调试ffmpeg/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>yxibng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年3月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/03/09/ffmpeg/2022-03-09-%E4%BD%BF%E7%94%A8Xcode%E8%B0%83%E8%AF%95ffmpeg/" title="使用Xcode调试ffmpeg">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">使用Xcode调试ffmpeg</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/02/25/Shell/2022-02-25-Shell%20%E5%8F%98%E9%87%8F/" title="Shell 变量">
+                        <span class="hidden-mobile">Shell 变量</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

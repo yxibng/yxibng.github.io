@@ -1,0 +1,771 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="yxibng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="参考：MPEG-TS 格式解析 An introduction to MPEG-TS 背景介绍MPEG-TS一种标准数据容器格式，传输与存储音视频、节目与系统信息协议数据，应用于数字广播系统，譬如DVB,ATSC与IPTV。传输流在MPEG-2第1部分系统中规定，正式称为ISO &#x2F; IEC标准13818-1或ITU-T建议书[1]。 MPEG2&#x2F;DVB是一种多媒体传输、复用技术">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MPEG-TS 格式分析">
+<meta property="og:url" content="https://yxibng.github.io/2022/10/12/hls/2022-10-12-MPEG-TS%20%E6%A0%BC%E5%BC%8F%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:description" content="参考：MPEG-TS 格式解析 An introduction to MPEG-TS 背景介绍MPEG-TS一种标准数据容器格式，传输与存储音视频、节目与系统信息协议数据，应用于数字广播系统，譬如DVB,ATSC与IPTV。传输流在MPEG-2第1部分系统中规定，正式称为ISO &#x2F; IEC标准13818-1或ITU-T建议书[1]。 MPEG2&#x2F;DVB是一种多媒体传输、复用技术">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655696635121665569663420.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655697239811665569723213.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655698149521665569814410.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655700779571665570077901.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655701129401665570112830.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655826274671665582627092.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655846904131665584689570.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655849004091665584900226.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655849504061665584950270.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655851034681665585103423.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655853343991665585333549.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655858313871061665585632_.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655858713891665585871171.png">
+<meta property="article:published_time" content="2022-10-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-06T11:53:13.566Z">
+<meta property="article:author" content="yxibng">
+<meta property="article:tag" content="hls">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655696635121665569663420.png">
+  
+  
+  
+  <title>MPEG-TS 格式分析 - yxibng</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"yxibng.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>yxibng</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="MPEG-TS 格式分析"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-10-12 00:00" pubdate>
+          2022年10月12日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          27 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">MPEG-TS 格式分析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>参考：<br><a target="_blank" rel="noopener" href="https://blog.csdn.net/Kayson12345/article/details/81266587">MPEG-TS 格式解析</a></p>
+<p><a target="_blank" rel="noopener" href="https://tsduck.io/download/docs/mpegts-introduction.pdf">An introduction to MPEG-TS</a></p>
+<h1 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h1><p>MPEG-TS一种标准数据容器格式，传输与存储音视频、节目与系统信息协议数据，应用于数字广播系统，譬如DVB,ATSC与IPTV。传输流在MPEG-2第1部分系统中规定，正式称为ISO &#x2F; IEC标准13818-1或ITU-T建议书[1]。</p>
+<p>MPEG2&#x2F;DVB是一种多媒体传输、复用技术，在数字电视广播中可提供数百个节目频道。复用的含义是，可以同时传输多层节目。</p>
+<p>注意，DVB全称为Digital Video Broadcasting，包括不同的系统，如卫星数字电视广播系统，有线数字电视广播系统，地面开路数字电视广播系统，交互式数字电视广播系统以及数字电视加扰系统。DVB系统标准是一种全球数字电视技术的标准。如何定义广播中的比特流语法与句法，以实现在比特流中复用数字音频与视频，欧洲的DVB采用数字视频压缩MPEG-2标准，该标准是定义比特流的语法与句法的一个ISO&#x2F;IEC标准，即13818-1标准。DVB系统的核心技术是采用MPEG-2技术进行视频、音频的编码，使用统一的MPEG-2传输流（TS流）。</p>
+<p>MPEG-2标准中，有两种不同的码流输出到信道，一种是节目码流（PS: Program Stream），适用于没有传输误差的场景；一种是传送流（TS：Transport Stream)，适用于有信道噪声的传输场景。节目流设计用于合理可靠的媒体，如光盘（如DVD），而传输流设计用于不太可靠的传输，即地面或卫星广播。此外，传输流可以携带多个节目。</p>
+<p>MPEG-2 system（编号13818-1）是MPEG-2标准的其中一部分，该部分描述了多个视频，音频和数据多种基本流（ES）合成传输流（TS）和节目流（PS）的方式。</p>
+<h1 id="TS-介绍"><a href="#TS-介绍" class="headerlink" title="TS 介绍"></a>TS 介绍</h1><p>一路TS比特流通常由连续的固定字节的TS包组成，所包含的内容有：</p>
+<ul>
+<li><p>一路或多路视频流（多个PES包组成，每个PES包的PID是一致的，一个PES包可能由若干个TS包组成）</p>
+</li>
+<li><p>一路或多路音频流（通常为杜比的音频格式）</p>
+</li>
+<li><p>一路或多路字幕</p>
+</li>
+<li><p>PSI表格信息（Program Specific Information，包括PAT与PMT表，即节目关联表与节目映射表）</p>
+</li>
+<li><p>PES: Packetized Elementary Stream，一路基本码流（如MEPG2视频流）会在编码器端被打包成PES流，由多个PES包组成，打包的过程中主要加入了PTS&#x2F;DTS信息。</p>
+</li>
+</ul>
+<p>PAT(Program Association Table)描述有多少路节目，每路节目的PMT（Program Map Table）表的PID是多少，PMT则描述了本节目有多少流，每一路流的类型与PID是多少，举个例子，你找个一个TS包，它的PID是0，说明它的负载内容是PAT信息，解析PAT信息，你发现节目1的PMT表的PID是0x10，接着，你在比特流中寻找一个PID为0x10的TS包，它的负载内容是节目1的PMT表信息，解析该PMT信息，你可以发现第一路流是MPEG2音频流，PID号0x21，第二路流是MPEG2视频流，PID号是0x22，第三路流是DVB字幕流，PID号是0x23，解析完毕，凡是比特流中PID号为0x22的TS包，所负载的内容为MPEG2视频流，把这些包一个一个找出来，把其中的有效码流一部分一部分的拼接起来，然后送给解码器去解码。</p>
+<p>注意，就一般的视频流而言，只要拼接成一个完整的PES包，就可以送出去给解码器，然后再继续拼接下一个PES包。</p>
+<p>什么是ES流，PES流，TS流？</p>
+<ul>
+<li><p>ES流：有三种，图像数据流，音频数据流，以及其他编码数据流。</p>
+</li>
+<li><p>PES流：PES流是ES流经过PES打包器处理后形成的数据流，在这个过程中完成了将ES流分组、打包、加入包头信息等操作（对ES流的第一次打包）。PES流的基本单位是PES包。</p>
+</li>
+<li><p>TS流：由定长的TS包组成（188字节），而TS包是对PES包的一个重新封装（到这里，ES经过了两层的封装） 。应用于相对有错环境下的传输与存储（如DVB中），其基本单位是TS包，长度固定188字节。日本的DVB-S广播系统采用192个字节的TS包，美国采用204个字节的TS包，多加了16个字节的前向纠错校验码（FEC）。</p>
+</li>
+</ul>
+<p><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655696635121665569663420.png" srcset="/img/loading.gif" lazyload><br>Fig. 1. ES流打包成PES流<br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655697239811665569723213.png" srcset="/img/loading.gif" lazyload><br>Fig. 2. PES流打包成TS流</p>
+<p>什么是PSI表？</p>
+<p>PSI(Program Specific Info)，节目特定信息，该表格信息用来描述传送流的组成结构。PSI信息由四种类型的表组成，包括节目关联表（PAT），节目映射表（PMT），条件接收表（CAT），网络信息表（NIT）。PAT与PMT两张表帮助我们找到该传送流中的所有节目与流，PAT告诉我们，该TS流由哪些节目组成，每个节目的节目映射表PMT的PID是什么，而PMT告诉我们，该节目由哪些流组成，每一路流的类型与PID是什么。CAT与NIT暂时不考虑。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655698149521665569814410.png" srcset="/img/loading.gif" lazyload></p>
+<p>Fig. 3. PSI表</p>
+<h1 id="TS解封装的原理"><a href="#TS解封装的原理" class="headerlink" title="TS解封装的原理"></a>TS解封装的原理</h1><p>TS流的形成过程：</p>
+<ol>
+<li>将原始音视频数据压缩之后，压缩结果组成一个基本码流（ES）。</li>
+<li>对ES（基本码流）进行打包形成PES。</li>
+<li>在PES包中加入时间戳信息(PTS&#x2F;DTS)。</li>
+<li>将PES包内容分配到一系列固定长度的传输包（TS Packet）中。</li>
+<li>在传输包中加入定时信息(PCR)。</li>
+<li>在传输包中加入节目专用信息(PSI) 。</li>
+<li>连续输出传输包形成具有恒定比特率的MPEG-TS流。</li>
+</ol>
+<p>TS流的解析过程，可以说是生成的逆过程：</p>
+<ol>
+<li>从复用的MPEG-TS流中解析出TS包；</li>
+<li>从TS包中获取PAT及对应的PMT（PSI中的表格）；</li>
+<li>从而获取特定节目的音视频PID；</li>
+<li>通过PID筛选出特定音视频相关的TS包，并解析出PES；</li>
+<li>从PES中读取到PTS&#x2F;DTS，并从PES中解析出基本码流ES；</li>
+<li>将ES交给解码器，获得压缩前的原始音视频数据</li>
+</ol>
+<h1 id="TS格式详解"><a href="#TS格式详解" class="headerlink" title="TS格式详解"></a>TS格式详解</h1><h2 id="1-TS包格式"><a href="#1-TS包格式" class="headerlink" title="1. TS包格式"></a>1. TS包格式</h2><p>TS包主要由两部分组成，一是4个字节的包头信息，二是有效载荷，另外中间有可能插入自适应调整字段。有效载荷包括节目专用信息，打包后的流数据，以及业务信息。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655700779571665570077901.png" srcset="/img/loading.gif" lazyload></p>
+<p>Fig. 4. TS包的组成结构</p>
+<p>TS的语法结构如下：</p>
+<p><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655701129401665570112830.png" srcset="/img/loading.gif" lazyload></p>
+<p>Fig. 5. TS的语法结构</p>
+<p>主要字段解析：<br>Sync byte:同步字节，值为0x47；</p>
+<p>Transport error indicator:传输错误指示位，置1时，表示传送包中至少有一个不可纠正的错误位。</p>
+<p>Payload unit start indicator:负载单元起始指标位，表示TS包的有效净荷以PES&#x2F;PSI包的第一个字节开始，举个例子，一个PES包可能由多个TS包构成，第一个TS包的负载单元起始指标位才会被置位。</p>
+<p>Transport priority:传输优先级，表明该包比同个PID的但未置位的TS包有更高的优先级。</p>
+<p>PID:该TS包的ID号，如果净荷是PAT包，则PID固定为0x00。</p>
+<p>Transport scrambling control:传输加扰控制位</p>
+<p>Adaption field control:自适应调整域控制位，置位则表明该TS包存在自适应调整字段。</p>
+<p>Continuity counter:连续计数器，随着具有相同PID的TS包的增加而增加，达到最大时恢复为0，如果两个连续相同PID的TS包具有相同的计数，则表明这两个包是一样的，只取一个解析即可。</p>
+<p>Payload:负载内容，可能为PAT&#x2F;PMT&#x2F;PES。data_byte为1B长<br>度的数据，为负载字节。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655826274671665582627092.png" srcset="/img/loading.gif" lazyload></p>
+<p>Fig. 6. TS的语法结构代码示意</p>
+<h2 id="2-PAT-格式"><a href="#2-PAT-格式" class="headerlink" title="2. PAT 格式"></a>2. PAT 格式</h2><p>PAT的语法结构如下：</p>
+<p><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655846904131665584689570.png" srcset="/img/loading.gif" lazyload><br>Fig. 7. PAT的语法结构示意</p>
+<p>主要的字段解析如下：</p>
+<p>table_id: 标识一个TS PSI 分段的内容是节目关联分段，条件访问分段还是节目映射分段。对于PAT，置为0x00。</p>
+<p>section_syntax_indicator: 对于PAT，置为0x01。</p>
+<p>section_length: 分段长度字段，其值为从section_length（不包括在内）到CRC_32字段的字节数，其值不超过1021。</p>
+<p>transport_stream_id: 区别与其他复用流的标识。</p>
+<p>version_number: PAT的版本号，如果PAT有变，则版本号加1。</p>
+<p>current_next_indicator:置0时，表明该传送的表分段不能使用，下一个表分段才有效。</p>
+<p>section_number: 表明该TS包属于该PAT的第几个分段，分段号从0开始。</p>
+<p>last_section_number: 表明最后一个分段号，同时表明该PAT的最大分段数目。一般，一个PAT表由一个TS包传送。</p>
+<p>program_number: 节目的编号。</p>
+<p>network_PID: NIT表的PID值。</p>
+<p>program_map_PID: PMT表的PID值。</p>
+<p>CRC_32: CRC校验。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655849004091665584900226.png" srcset="/img/loading.gif" lazyload><br>Fig. 8. PAT语法结构代码示意</p>
+<h2 id="3-PMT-格式"><a href="#3-PMT-格式" class="headerlink" title="3. PMT 格式"></a>3. PMT 格式</h2><p>PMT的语法结构如下：<br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655849504061665584950270.png" srcset="/img/loading.gif" lazyload><br>Fig. 9. PMT语法结构</p>
+<p>主要的字段解析如下：</p>
+<p>table_id: 标识一个TS PSI 分段的内容是节目关联分段，条件访问分段还是节目映射分段。对于PMT，置为0x02。</p>
+<p>section_syntax_indicator: 对于PMT，置为0x01。</p>
+<p>section_length: 分段长度字段，其值为从section_length（包括在内）到CRC_32字段的字节数，其值不超过1021。</p>
+<p>program_number: 表明一共有多少个节目。</p>
+<p>version_number: PMT的版本号，如果字段中有关信息有变，则版本号以32为模加1。版本号是对一个节目的定义。</p>
+<p>current_next_indicator:置0时，表明该传送的表分段不能使用，下一个表分段才有效。</p>
+<p>section_number: 总为0x00。</p>
+<p>last_section_number: 总为0x00。</p>
+<p>PCR_PID: 指示含有该节目的PCR字段的TS包的PID。</p>
+<p>program_info_length: 表明跟随其后的对节目信息描述的字节数，也就是第一个N loop descriptors的字节数。</p>
+<p>stream_type: 表明PES流的类型。譬如，0x01表明是MPEG-1视频，0X03表明是MPEG-1音频。</p>
+<p>elementary_PID: 表明该负载有该PES流的TS包的PID值。</p>
+<p>ES_info_length: 表明跟随其后的描述相关节目元素的字节数，也就是第二个N loop descriptors的字节数。</p>
+<p>CRC_32: 在CEDARX代码中仅对DVB的场景下作校验。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655851034681665585103423.png" srcset="/img/loading.gif" lazyload></p>
+<p>Fig. 10. PMT的语法结构代码示意</p>
+<h2 id="4-PES格式"><a href="#4-PES格式" class="headerlink" title="4.PES格式"></a>4.PES格式</h2><p>PES的语法如图10所示，它携带的主要信息包括流的ID，PES包的长度，PTS以及流的数据，也就是音视频与字幕数据。</p>
+<p>主要的字段解析如下：</p>
+<p>packet_start_code_prefix: 固定0x000001</p>
+<p>stream_id: 指定基本流的类型与编号</p>
+<p>PES_packet_length: 表明在该字段后面还有多少个字节。0表明PES包的长度未指示也未限定，对于当前的PES包而言。</p>
+<p>PES_scrambling_control: PES包的有效载荷的加扰方式。</p>
+<p>PES_priority: 多路复用器可以通过该位最优化基本流内的数据。</p>
+<p>data_alignment_indicator:</p>
+<p>copyright: PES包中的有效载荷确定具有版权的话，就置位。</p>
+<p>orginal_or_copy: 置位时，表明PES包的有效载荷的内容是原始的，非复制的。</p>
+<p>PTS_DTS_flags: 2比特字节，表明PTS&#x2F;DTC的存在情况。</p>
+<p>ES_rate_flag: 置位，表明后面存在ES_rate字段。</p>
+<p>PES_header_data_length: 表明该PES包头中由任选字段与填充字节所占据的字节总数。任选字段譬如ES_rate。</p>
+<p>marker_bit: 为1的比特位。</p>
+<p>PTS: 对于音频而言，如果该PES包中存在PTS字段，则有效负载中肯定有新的音频存取单元（access unit），该PTS对应于该音频存取单元。新的音频存取单元指的是一帧新的音频帧。对于视频而言，一般情况下，跟音频一样。</p>
+<p>DTS: 解码时间标志，当前CEDARX解码器未用到DTS。</p>
+<p>ES_rate: 基本流速率，指定系统目标解码器接收PES包字节的速率。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655853343991665585333549.png" srcset="/img/loading.gif" lazyload><br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655858313871061665585632_.jpg" srcset="/img/loading.gif" lazyload><br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16655858713891665585871171.png" srcset="/img/loading.gif" lazyload><br>Fig. 11. PES的语法结构代码</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p>[1] ISO &#x2F; IEC标准13818-1或ITU-T建议书 <a target="_blank" rel="noopener" href="http://www.itu.int/rec/T-REC-H.222.0">http://www.itu.int/rec/T-REC-H.222.0</a></p>
+<p>[2] 《数字电视业务信息及其编码》，方涛，国防工业出版社</p>
+<p>[3] <a target="_blank" rel="noopener" href="https://wenku.baidu.com/view/87f5439c2f60ddccdb38a066.html?rec_flag=default">https://wenku.baidu.com/view/87f5439c2f60ddccdb38a066.html?rec_flag=default</a></p>
+<p>[4] TS码流结构分析PPT，网络资料</p>
+<p>————————————————</p>
+<p>版权声明：本文为CSDN博主「Kayson12345」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。<br>原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Kayson12345/article/details/81266587">https://blog.csdn.net/Kayson12345/article/details/81266587</a></p>
+<h1 id="个人理解"><a href="#个人理解" class="headerlink" title="个人理解"></a>个人理解</h1><p>从TS流中获取PAT，解析PAT得到节目列表，每个节目列表对应一个PMT， 从PMT中得该节目对应的音视频PID， 从TS流根据PID滤出音视频TS包，将TS包还原为PES包，进而还原为ES流（h264, aac）送给解码器解码。</p>
+<p>结合<a target="_blank" rel="noopener" href="https://tsduck.io/download/docs/mpegts-introduction.pdf">An introduction to MPEG-TS</a>看起来更易于理解。</p>
+<h1 id="分析工具"><a href="#分析工具" class="headerlink" title="分析工具"></a>分析工具</h1><p><a target="_blank" rel="noopener" href="https://easyice.cn/archives/85">easyice </a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/hls/" class="print-no-link">#hls</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>MPEG-TS 格式分析</div>
+      <div>https://yxibng.github.io/2022/10/12/hls/2022-10-12-MPEG-TS 格式分析/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>yxibng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年10月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/10/13/hls/2022-10-13-HLS-%E4%BB%8B%E7%BB%8D/" title="HLS 介绍，M3U8 格式分析">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">HLS 介绍，M3U8 格式分析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/09/23/aac/2022-09-23-aac-adts/" title="aac adts 格式分析">
+                        <span class="hidden-mobile">aac adts 格式分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

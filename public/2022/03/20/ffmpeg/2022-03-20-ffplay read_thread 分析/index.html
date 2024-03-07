@@ -1,0 +1,795 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="yxibng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="参考： ffplay read线程分析  ffplay main 函数 做了什么   参数验证与解析  注册codecs， demux， protocols  sdl 初始化，创建窗口  调用stream_open打开流  调用event_loop进入运行循环    stream_open 做了什么      主要是初始化VideoState *is，填充关键信息  初始化，分配内存is &#x3D; av">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ffplay read_thread 分析">
+<meta property="og:url" content="https://yxibng.github.io/2022/03/20/ffmpeg/2022-03-20-ffplay%20read_thread%20%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:description" content="参考： ffplay read线程分析  ffplay main 函数 做了什么   参数验证与解析  注册codecs， demux， protocols  sdl 初始化，创建窗口  调用stream_open打开流  调用event_loop进入运行循环    stream_open 做了什么      主要是初始化VideoState *is，填充关键信息  初始化，分配内存is &#x3D; av">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-03-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-06T11:53:13.566Z">
+<meta property="article:author" content="yxibng">
+<meta property="article:tag" content="ffmpeg">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>ffplay read_thread 分析 - yxibng</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"yxibng.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>yxibng</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="ffplay read_thread 分析"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-03-20 00:00" pubdate>
+          2022年3月20日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          33 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">ffplay read_thread 分析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>参考： <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/43672062">ffplay read线程分析</a></p>
+<blockquote>
+<p>ffplay main 函数 做了什么</p>
+</blockquote>
+<ol>
+<li><p>参数验证与解析</p>
+</li>
+<li><p>注册codecs， demux， protocols</p>
+</li>
+<li><p>sdl 初始化，创建窗口</p>
+</li>
+<li><p>调用stream_open打开流</p>
+</li>
+<li><p>调用event_loop进入运行循环</p>
+</li>
+</ol>
+<blockquote>
+<p>stream_open 做了什么</p>
+</blockquote>
+<p>    主要是初始化VideoState *is，填充关键信息</p>
+<ol>
+<li><p>初始化，分配内存<code>is = av_mallocz(sizeof(VideoState));</code></p>
+</li>
+<li><p>调用frame_queue_init给VideoState对应的音频，视频，字幕对应Frame队列初始化分配内存</p>
+</li>
+<li><p>调用packet_queue_init给VideoState对应的音频，视频，字幕对应Packet队列初始化分配内存</p>
+</li>
+<li><p>创建条件变量continue_read_thread， 用于控制是否继续读取或者等待</p>
+</li>
+<li><p>调用init_clock 初始化音频，视频，外部时钟</p>
+</li>
+<li><p>设置同步类型av_sync_type</p>
+</li>
+<li><p>创建并开启read_thread</p>
+</li>
+</ol>
+<h2 id="read-thread"><a href="#read-thread" class="headerlink" title="read_thread"></a>read_thread</h2><p>分为两个阶段：</p>
+<ol>
+<li><p>准备阶段</p>
+</li>
+<li><p>循环读pkt</p>
+</li>
+</ol>
+<p>准备阶段：</p>
+<p>stream_open 对VideoState *is 做了初始化关键参数的填充。read_thread 在这个基础上，打开输入的流，解封装，读取流的信息，找到音频，视频，字幕对应的stream，读取解码参数，创建解码器，开启解码器。分别为音频，视频，字幕开启创建解码线程。</p>
+<p>循环读pkt：</p>
+<p>然后进入循环，从流中读取pkt，根据同步时钟，放入pkt队列或者丢弃。如果读结束，给pkt队列放入空包，用于冲洗解码器。</p>
+<p>循环中还要处理终止暂停恢复事件，seek事件，根据队列的状态（是否有足够的数据）控制等待还是继续读取新的pkt。</p>
+<h3 id="准备阶段"><a href="#准备阶段" class="headerlink" title="准备阶段"></a>准备阶段</h3><p>打开文件，解封装，获取文件信息</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c">VideoState *is = arg;<br>AVFormatContext *ic = <span class="hljs-literal">NULL</span>;<br><span class="hljs-comment">//创建AVFormatContext</span><br>ic = avformat_alloc_context();<br><span class="hljs-comment">//interrupt_callback用于ffmpeg内部在执行耗时操作时检查是否有退出请求，并提前中断，避免用户退出请求没有及时响应</span><br>ic-&gt;interrupt_callback.callback = decode_interrupt_cb;<br>ic-&gt;interrupt_callback.opaque = is;<br><span class="hljs-comment">//特定选项处理</span><br><span class="hljs-keyword">if</span> (!av_dict_get(format_opts, <span class="hljs-string">&quot;scan_all_pmts&quot;</span>, <span class="hljs-literal">NULL</span>, AV_DICT_MATCH_CASE)) &#123;<br>    av_dict_set(&amp;format_opts, <span class="hljs-string">&quot;scan_all_pmts&quot;</span>, <span class="hljs-string">&quot;1&quot;</span>, AV_DICT_DONT_OVERWRITE);<br>    scan_all_pmts_set = <span class="hljs-number">1</span>;<br>&#125;<br><span class="hljs-comment">//打开输入的流，读取流的头部信息</span><br>err = avformat_open_input(&amp;ic, is-&gt;filename, is-&gt;iformat, &amp;format_opts);<br><span class="hljs-comment">//保存AVFormatContext</span><br>is-&gt;ic = ic;<br><span class="hljs-keyword">if</span> (find_stream_info) &#123;<br>    <span class="hljs-comment">//如果文件不包含头部信息(如ts)，通过读取一段文件分析后得到流信息</span><br>    err = avformat_find_stream_info(ic, opts);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>判断是否是实时流</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//是否是实时流rtp/rtsp/sdp等</span><br>is-&gt;realtime = is_realtime(ic);<br></code></pre></td></tr></table></figure>
+
+<p>is_realtime 函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">is_realtime</span><span class="hljs-params">(AVFormatContext *s)</span><br>&#123;<br>    <span class="hljs-keyword">if</span>(   !<span class="hljs-built_in">strcmp</span>(s-&gt;iformat-&gt;name, <span class="hljs-string">&quot;rtp&quot;</span>)<br>       || !<span class="hljs-built_in">strcmp</span>(s-&gt;iformat-&gt;name, <span class="hljs-string">&quot;rtsp&quot;</span>)<br>       || !<span class="hljs-built_in">strcmp</span>(s-&gt;iformat-&gt;name, <span class="hljs-string">&quot;sdp&quot;</span>)<br>    )<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br><br>    <span class="hljs-keyword">if</span>(s-&gt;pb &amp;&amp; (   !<span class="hljs-built_in">strncmp</span>(s-&gt;url, <span class="hljs-string">&quot;rtp:&quot;</span>, <span class="hljs-number">4</span>)<br>                 || !<span class="hljs-built_in">strncmp</span>(s-&gt;url, <span class="hljs-string">&quot;udp:&quot;</span>, <span class="hljs-number">4</span>)<br>                )<br>    )<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>选择音频，视频，字幕流。实际操作中，选择的策略很多，一般根据具体需求来定——比如可以是选择最高清的视频流；选择本地语言的音频流；直接选择第一条视频、音频轨道；等等。</p>
+<p>ffplay主要是通过<code>av_find_best_stream</code>来选择：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//如果用户通过wanted_stream_spec指定了流，找到用户选择的流</span><br><span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; ic-&gt;nb_streams; i++) &#123;<br>    AVStream *st = ic-&gt;streams[i];<br>    <span class="hljs-class"><span class="hljs-keyword">enum</span> <span class="hljs-title">AVMediaType</span> <span class="hljs-title">type</span> =</span> st-&gt;codecpar-&gt;codec_type;<br>    st-&gt;discard = AVDISCARD_ALL;<br>    <span class="hljs-keyword">if</span> (type &gt;= <span class="hljs-number">0</span> &amp;&amp; wanted_stream_spec[type] &amp;&amp; st_index[type] == <span class="hljs-number">-1</span>)<br>        <span class="hljs-keyword">if</span> (avformat_match_stream_specifier(ic, st, wanted_stream_spec[type]) &gt; <span class="hljs-number">0</span>)<br>            st_index[type] = i;<br>&#125;<br><span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; AVMEDIA_TYPE_NB; i++) &#123;<br>    <span class="hljs-keyword">if</span> (wanted_stream_spec[i] &amp;&amp; st_index[i] == <span class="hljs-number">-1</span>) &#123;<br>        <span class="hljs-comment">//处理找不到用户选择的流的情况</span><br>        av_log(<span class="hljs-literal">NULL</span>, AV_LOG_ERROR, <span class="hljs-string">&quot;Stream specifier %s does not match any %s stream\n&quot;</span>, wanted_stream_spec[i], av_get_media_type_string(i));<br>        st_index[i] = INT_MAX;<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">//获取video stream</span><br><span class="hljs-keyword">if</span> (!video_disable)<br>    st_index[AVMEDIA_TYPE_VIDEO] =<br>        av_find_best_stream(ic, AVMEDIA_TYPE_VIDEO,<br>                            st_index[AVMEDIA_TYPE_VIDEO], <span class="hljs-number">-1</span>, <span class="hljs-literal">NULL</span>, <span class="hljs-number">0</span>);<br><span class="hljs-comment">//获取audio stream，参考视频流选择</span><br><span class="hljs-keyword">if</span> (!audio_disable)<br>    st_index[AVMEDIA_TYPE_AUDIO] =<br>        av_find_best_stream(ic, AVMEDIA_TYPE_AUDIO,<br>                            st_index[AVMEDIA_TYPE_AUDIO],<br>                            st_index[AVMEDIA_TYPE_VIDEO],<br>                            <span class="hljs-literal">NULL</span>, <span class="hljs-number">0</span>);<br><span class="hljs-comment">//获取subtitle stream，优先参考音频流</span><br><span class="hljs-keyword">if</span> (!video_disable &amp;&amp; !subtitle_disable)<br>    st_index[AVMEDIA_TYPE_SUBTITLE] =<br>        av_find_best_stream(ic, AVMEDIA_TYPE_SUBTITLE,<br>                            st_index[AVMEDIA_TYPE_SUBTITLE],<br>                            (st_index[AVMEDIA_TYPE_AUDIO] &gt;= <span class="hljs-number">0</span> ?<br>                             st_index[AVMEDIA_TYPE_AUDIO] :<br>                             st_index[AVMEDIA_TYPE_VIDEO]),<br>                            <span class="hljs-literal">NULL</span>, <span class="hljs-number">0</span>);<br></code></pre></td></tr></table></figure>
+
+<p>wanted_stream_spec通过main函数传参设定，格式可以有很多种，参考<a target="_blank" rel="noopener" href="https://www.ffmpeg.org/ffplay.html#Stream-specifiers-1">官方文档</a></p>
+<p>如果用户没有指定流，或指定部分流，或指定流不存在，则主要由av_find_best_stream发挥作用。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">av_find_best_stream</span><span class="hljs-params">(AVFormatContext *ic,</span><br><span class="hljs-params">                        <span class="hljs-keyword">enum</span> AVMediaType type,<span class="hljs-comment">//要选择的流类型</span></span><br><span class="hljs-params">                        <span class="hljs-type">int</span> wanted_stream_nb,<span class="hljs-comment">//目标流索引</span></span><br><span class="hljs-params">                        <span class="hljs-type">int</span> related_stream,<span class="hljs-comment">//参考流索引</span></span><br><span class="hljs-params">                        AVCodec **decoder_ret,</span><br><span class="hljs-params">                        <span class="hljs-type">int</span> flags)</span>;<br></code></pre></td></tr></table></figure>
+
+<p>如果指定了正确的wanted_stream_nb，一般情况都是直接返回该指定流，即用户选择的流。如果指定了参考流，且未指定目标流的情况，会根据参考流去查找所需类型的流，但一般结果，都是返回该类型第一个流。</p>
+<p>已经获取了流信息，下一步就是创建解码器，开启解码线程。 </p>
+<p>主要在<code>stream_component_open</code>方法中实现, 简化代码如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">stream_component_open</span><span class="hljs-params">(VideoState *is, <span class="hljs-type">int</span> stream_index)</span><br>&#123;<br>    <span class="hljs-comment">//创建解码器上下文</span><br>    avctx = avcodec_alloc_context3(<span class="hljs-literal">NULL</span>);        <br>    <span class="hljs-comment">//填充解码参数</span><br>    ret = avcodec_parameters_to_context(avctx, ic-&gt;streams[stream_index]-&gt;codecpar);<br>    <span class="hljs-comment">//设置解码器的时间基，等于stream的时间基</span><br>    avctx-&gt;pkt_timebase = ic-&gt;streams[stream_index]-&gt;time_base;<br>    <span class="hljs-comment">//找解码器</span><br>    codec = avcodec_find_decoder(avctx-&gt;codec_id);<br>    <span class="hljs-keyword">if</span> (forced_codec_name)<br>        <span class="hljs-comment">//如果用户指定了解码器，使用用户指定的解码器</span><br>        codec = avcodec_find_decoder_by_name(forced_codec_name);<br>    <span class="hljs-comment">//打开解码器</span><br>    <span class="hljs-keyword">if</span> ((ret = avcodec_open2(avctx, codec, &amp;opts)) &lt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">goto</span> fail;<br>    &#125;<br>    <span class="hljs-keyword">switch</span> (avctx-&gt;codec_type) &#123;<br>    <span class="hljs-keyword">case</span> AVMEDIA_TYPE_AUDIO:<br>        <span class="hljs-comment">//打开音频播放器</span><br>        <span class="hljs-keyword">if</span> ((ret = audio_open(is, channel_layout, nb_channels, sample_rate, &amp;is-&gt;audio_tgt)) &lt; <span class="hljs-number">0</span>)<br>            <span class="hljs-keyword">goto</span> fail;<br>        <span class="hljs-comment">//给is-&gt;auddec初始化</span><br>        <span class="hljs-keyword">if</span> ((ret = decoder_init(&amp;is-&gt;auddec, avctx, &amp;is-&gt;audioq, is-&gt;continue_read_thread)) &lt; <span class="hljs-number">0</span>)<br>            <span class="hljs-keyword">goto</span> fail;<br>        <span class="hljs-comment">//开启音频解码线程</span><br>        <span class="hljs-keyword">if</span> ((ret = decoder_start(&amp;is-&gt;auddec, audio_thread, <span class="hljs-string">&quot;audio_decoder&quot;</span>, is)) &lt; <span class="hljs-number">0</span>)<br>            <span class="hljs-keyword">goto</span> out;<br>        <span class="hljs-comment">//暂停音频播放器</span><br>        SDL_PauseAudioDevice(audio_dev, <span class="hljs-number">0</span>);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> AVMEDIA_TYPE_VIDEO:<br>        is-&gt;video_stream = stream_index;<br>        is-&gt;video_st = ic-&gt;streams[stream_index];<br>        <span class="hljs-comment">//给is-&gt;viddec初始化</span><br>        <span class="hljs-keyword">if</span> ((ret = decoder_init(&amp;is-&gt;viddec, avctx, &amp;is-&gt;videoq, is-&gt;continue_read_thread)) &lt; <span class="hljs-number">0</span>)<br>            <span class="hljs-keyword">goto</span> fail;<br>        <span class="hljs-comment">//开启视频解码线程</span><br>        <span class="hljs-keyword">if</span> ((ret = decoder_start(&amp;is-&gt;viddec, video_thread, <span class="hljs-string">&quot;video_decoder&quot;</span>, is)) &lt; <span class="hljs-number">0</span>)<br>            <span class="hljs-keyword">goto</span> out;<br>        is-&gt;queue_attachments_req = <span class="hljs-number">1</span>;<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> AVMEDIA_TYPE_SUBTITLE:<br>        is-&gt;subtitle_stream = stream_index;<br>        is-&gt;subtitle_st = ic-&gt;streams[stream_index];<br>        <span class="hljs-comment">//初始化字幕解码</span><br>        <span class="hljs-keyword">if</span> ((ret = decoder_init(&amp;is-&gt;subdec, avctx, &amp;is-&gt;subtitleq, is-&gt;continue_read_thread)) &lt; <span class="hljs-number">0</span>)<br>            <span class="hljs-keyword">goto</span> fail;<br>        <span class="hljs-comment">//开启字幕解码线程</span><br>        <span class="hljs-keyword">if</span> ((ret = decoder_start(&amp;is-&gt;subdec, subtitle_thread, <span class="hljs-string">&quot;subtitle_decoder&quot;</span>, is)) &lt; <span class="hljs-number">0</span>)<br>            <span class="hljs-keyword">goto</span> out;<br>        <span class="hljs-keyword">break</span>;<br>    &#125;<br>    <span class="hljs-comment">//....</span><br>    <span class="hljs-keyword">return</span> ret;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>针对音频，需要另外处理音频播放器的初始化，暂停状态。</p>
+<p>对音频，视频，字幕，调用<code>decoder_init</code>初始化Decoder， 调用<code>decoder_start</code>开启对应的解码线程。</p>
+<p>decoder_init</p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs xl">static int decoder_init(Decoder *d, AVCodecContext *avctx, PacketQueue *queue, SDL_cond *empty_queue_cond) &#123;<br>    memset(d, <span class="hljs-number">0</span>, sizeof(Decoder));<br>    <span class="hljs-function"><span class="hljs-title">d</span>-&gt;</span>pkt = av_packet_alloc();<br>    <span class="hljs-function"><span class="hljs-title">if</span> (!d-&gt;</span>pkt)<br>        return AVERROR(ENOMEM);<br>    <span class="hljs-function"><span class="hljs-title">d</span>-&gt;</span>avctx = avctx;<br>    <span class="hljs-function"><span class="hljs-title">d</span>-&gt;</span>queue = queue;<br>    <span class="hljs-function"><span class="hljs-title">d</span>-&gt;</span>empty_queue_cond = empty_queue_cond;<br>    <span class="hljs-function"><span class="hljs-title">d</span>-&gt;</span>start_pts = AV_NOPTS_VALUE;<br>    <span class="hljs-function"><span class="hljs-title">d</span>-&gt;</span>pkt_serial = -<span class="hljs-number">1</span>;<br>    return <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>decoder_start</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title">decoder_start</span><span class="hljs-params">(Decoder *d, <span class="hljs-type">int</span> (*fn)(<span class="hljs-type">void</span> *), <span class="hljs-type">const</span> <span class="hljs-type">char</span> *thread_name, <span class="hljs-type">void</span>* arg)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">//开启packet queue</span><br>    <span class="hljs-built_in">packet_queue_start</span>(d-&gt;queue);<br>    <span class="hljs-comment">//开启解码线程</span><br>    d-&gt;decoder_tid = <span class="hljs-built_in">SDL_CreateThread</span>(fn, thread_name, arg);<br>    <span class="hljs-keyword">if</span> (!d-&gt;decoder_tid) &#123;<br>        <span class="hljs-built_in">av_log</span>(<span class="hljs-literal">NULL</span>, AV_LOG_ERROR, <span class="hljs-string">&quot;SDL_CreateThread(): %s\n&quot;</span>, <span class="hljs-built_in">SDL_GetError</span>());<br>        <span class="hljs-keyword">return</span> <span class="hljs-built_in">AVERROR</span>(ENOMEM);<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="主循环读包"><a href="#主循环读包" class="headerlink" title="主循环读包"></a>主循环读包</h3><p>简化一下如下</p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><code class="hljs xl"><span class="hljs-keyword">for</span> (;;) &#123;<br>        <span class="hljs-function"><span class="hljs-title">if</span> (<span class="hljs-keyword">is</span>-&gt;</span>abort_request)<br>            break;<span class="hljs-comment">//处理退出消息</span><br>        <span class="hljs-function"><span class="hljs-title">if</span> (<span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">paused</span> != <span class="hljs-keyword">is</span>-&gt;</span>last_paused) &#123;<br>            <span class="hljs-comment">//处理暂停与恢复</span><br>            <span class="hljs-comment">//.......</span><br>        &#125;<br><br>        <span class="hljs-function"><span class="hljs-title">if</span> (<span class="hljs-keyword">is</span>-&gt;</span>seek_req) &#123;<br>            <span class="hljs-comment">//处理seek操作</span><br>            <span class="hljs-function"><span class="hljs-title">ret</span> = avformat_seek_file(<span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">ic</span>, -1, seek_min, seek_target, seek_max, <span class="hljs-keyword">is</span>-&gt;</span>seek_flags);<br>        &#125;<br>        <span class="hljs-comment">/*</span><br><span class="hljs-comment">        控制队列大小</span><br><span class="hljs-comment">        */</span><br>        <span class="hljs-keyword">if</span> (infinite_buffer&lt;<span class="hljs-number">1</span> &amp;&amp;<br>              (<span class="hljs-function"><span class="hljs-title">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">audioq</span>.size + <span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">videoq</span>.size + <span class="hljs-keyword">is</span>-&gt;</span>subtitleq.size &gt; MAX_QUEUE_SIZE<br>            || (<span class="hljs-function"><span class="hljs-title">stream_has_enough_packets</span>(<span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">audio_st</span>, <span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">audio_stream</span>, &amp;<span class="hljs-keyword">is</span>-&gt;</span>audioq) &amp;&amp;<br>                <span class="hljs-function"><span class="hljs-title">stream_has_enough_packets</span>(<span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">video_st</span>, <span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">video_stream</span>, &amp;<span class="hljs-keyword">is</span>-&gt;</span>videoq) &amp;&amp;<br>                <span class="hljs-function"><span class="hljs-title">stream_has_enough_packets</span>(<span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">subtitle_st</span>, <span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">subtitle_stream</span>, &amp;<span class="hljs-keyword">is</span>-&gt;</span>subtitleq)))) &#123;<br>            <span class="hljs-comment">/* wait 10 ms */</span><br>            SDL_LockMutex(wait_mutex);<br>            SDL_C<span class="hljs-function"><span class="hljs-title">ondWaitTimeout</span>(<span class="hljs-keyword">is</span>-&gt;</span>continue_read_thread, wait_mutex, <span class="hljs-number">10</span>);<br>            SDL_UnlockMutex(wait_mutex);<br>            continue;<br>        &#125;<br>        <span class="hljs-comment">//处理循环播放</span><br>        <span class="hljs-function"><span class="hljs-title">if</span> (!<span class="hljs-keyword">is</span>-&gt;</span>paused &amp;&amp;<br>            (!<span class="hljs-function"><span class="hljs-title">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">audio_st</span> || (<span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">auddec</span>.finished == <span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">audioq</span>.serial &amp;&amp; frame_queue_nb_remaining(&amp;<span class="hljs-keyword">is</span>-&gt;</span>sampq) == <span class="hljs-number">0</span>)) &amp;&amp;<br>            (!<span class="hljs-function"><span class="hljs-title">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">video_st</span> || (<span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">viddec</span>.finished == <span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">videoq</span>.serial &amp;&amp; frame_queue_nb_remaining(&amp;<span class="hljs-keyword">is</span>-&gt;</span>pictq) == <span class="hljs-number">0</span>))) &#123;<br>            <span class="hljs-keyword">if</span> (<span class="hljs-keyword">loop</span> != <span class="hljs-number">1</span> &amp;&amp; (!<span class="hljs-keyword">loop</span> || --<span class="hljs-keyword">loop</span>)) &#123;<br>                stream_seek(<span class="hljs-keyword">is</span>, start_time != AV_NOPTS_VALUE ? start_time : <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);<br>            &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (autoexit) &#123;<br>                ret = AVERROR_EOF;<br>                goto fail;<br>            &#125;<br>        &#125;<br>        <span class="hljs-comment">//读pkt</span><br>        ret = av_read_frame(ic, pkt);<br><br>        <span class="hljs-comment">//在播放区间，放入队列</span><br>        <span class="hljs-function"><span class="hljs-title">packet_queue_put</span>(&amp;<span class="hljs-keyword">is</span>-&gt;</span>videoq, pkt);<br>        <span class="hljs-comment">//不在播放区间，丢弃</span><br>        av_packet_unref(pkt);<br><br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>主要的代码就<code>av_read_frame</code>和<code>packet_queue_put</code>，<code>av_read_frame</code>从文件中读取视频数据，并获取一个AVPacket，<code>packet_queue_put</code>把它放入到对应的PacketQueue中。</p>
+<p>当然，读取过程还会有seek、pause、resume、abort等事件，所以有专门的分支处理这些请求。</p>
+<p>PacketQueue默认情况下会有大小限制，达到这个大小后，就需要等待10ms，以让消费者——解码线程能有时间消耗。</p>
+<p>播放完成后，会根据loop的设置决定是否循环。</p>
+<p>暂停&#x2F;恢复的处理：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (is-&gt;paused != is-&gt;last_paused) &#123;<br>    <span class="hljs-comment">//更新paused状态</span><br>    is-&gt;last_paused = is-&gt;paused;<br>    <span class="hljs-keyword">if</span> (is-&gt;paused)<br>        <span class="hljs-comment">//暂停</span><br>        is-&gt;read_pause_return = av_read_pause(ic);<br>    <span class="hljs-keyword">else</span><br>        <span class="hljs-comment">//恢复播放</span><br>        av_read_play(ic);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>ffmpeg有专门针对暂停和恢复的函数，所以直接调用就可以了。</p>
+<blockquote>
+<p>av_read_pause和av_read_play对于URLProtocol，会调用其url_read_pause，通过参数区分是要暂停还是恢复。对于AVInputFormat会调用其read_pause和read_play.<br>一般情况下URLProtocol和AVInputFormat都不需要专门处理暂停和恢复，但对于像rtsp&#x2F;rtmp这种在通讯协议上支持(需要)暂停、恢复的就特别有用了。</p>
+</blockquote>
+<p>对于seek的处理，会比暂停&#x2F;恢复略微复杂一些：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (is-&gt;seek_req) &#123;<br>    <span class="hljs-comment">//处理seek操作</span><br>    <span class="hljs-type">int64_t</span> seek_target = is-&gt;seek_pos;<br>    <span class="hljs-type">int64_t</span> seek_min    = is-&gt;seek_rel &gt; <span class="hljs-number">0</span> ? seek_target - is-&gt;seek_rel + <span class="hljs-number">2</span>: INT64_MIN;<br>    <span class="hljs-type">int64_t</span> seek_max    = is-&gt;seek_rel &lt; <span class="hljs-number">0</span> ? seek_target - is-&gt;seek_rel - <span class="hljs-number">2</span>: INT64_MAX;<br><span class="hljs-comment">// FIXME the +-2 is due to rounding being not done in the correct direction in generation</span><br><span class="hljs-comment">//      of the seek_pos/seek_rel variables</span><br>    <span class="hljs-comment">//seek到正确的位置</span><br>    ret = avformat_seek_file(is-&gt;ic, <span class="hljs-number">-1</span>, seek_min, seek_target, seek_max, is-&gt;seek_flags);<br>    <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>        av_log(<span class="hljs-literal">NULL</span>, AV_LOG_ERROR,<br>               <span class="hljs-string">&quot;%s: error while seeking\n&quot;</span>, is-&gt;ic-&gt;url);<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-keyword">if</span> (is-&gt;audio_stream &gt;= <span class="hljs-number">0</span>)<br>            <span class="hljs-comment">//清空音频帧队列</span><br>            packet_queue_flush(&amp;is-&gt;audioq);<br>        <span class="hljs-keyword">if</span> (is-&gt;subtitle_stream &gt;= <span class="hljs-number">0</span>)<br>            <span class="hljs-comment">//清空字幕帧队列</span><br>            packet_queue_flush(&amp;is-&gt;subtitleq);<br>        <span class="hljs-keyword">if</span> (is-&gt;video_stream &gt;= <span class="hljs-number">0</span>)<br>            <span class="hljs-comment">//清空视频帧队列</span><br>            packet_queue_flush(&amp;is-&gt;videoq);<br>        <span class="hljs-comment">//更新clock</span><br>        <span class="hljs-keyword">if</span> (is-&gt;seek_flags &amp; AVSEEK_FLAG_BYTE) &#123;<br>           set_clock(&amp;is-&gt;extclk, NAN, <span class="hljs-number">0</span>);<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>           set_clock(&amp;is-&gt;extclk, seek_target / (<span class="hljs-type">double</span>)AV_TIME_BASE, <span class="hljs-number">0</span>);<br>        &#125;<br>    &#125;<br>    is-&gt;seek_req = <span class="hljs-number">0</span>;<br>    is-&gt;queue_attachments_req = <span class="hljs-number">1</span>;<br>    is-&gt;eof = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">if</span> (is-&gt;paused)<br>        step_to_next_frame(is);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>主要的seek操作通过avformat_seek_file完成。根据avformat_seek_file的返回值，如果seek成功，需要：</p>
+<ol>
+<li>清除PacketQueue的缓存，并放入一个flush_pkt。放入的flush_pkt可以让PacketQueue的serial增1，以区分seek前后的数据</li>
+<li>同步外部时钟。在后续音视频同步的文章中再具体分析。</li>
+</ol>
+<p>最后清理一些变量，并：</p>
+<ol>
+<li>设置queue_attachments_req以显示attachment画面</li>
+<li>如果当前是暂停状态，就跳到seek后的下一帧，以直观体现seek成功了</li>
+</ol>
+<p>step_to_next_frame</p>
+<figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs livescript"><span class="hljs-keyword">static</span> <span class="hljs-literal">void</span> step_to_next_frame(VideoState *<span class="hljs-keyword">is</span>)<br>&#123;<br>    <span class="hljs-comment">/* if the stream is paused unpause it, then step */</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">is</span>-&gt;paused)<br>        stream_toggle_pause(<span class="hljs-keyword">is</span>);<br>    <span class="hljs-keyword">is</span>-&gt;step = <span class="hljs-number">1</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>原代码的注释比较清晰了——先取消暂停，然后执行step。当设置step为1后，显示线程会显示出一帧画面，然后再次进入暂停：</p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs xl"><span class="hljs-comment">//in video_refresh</span><br><span class="hljs-function"><span class="hljs-title">if</span> (<span class="hljs-keyword">is</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">step</span> &amp;&amp; !<span class="hljs-keyword">is</span>-&gt;</span>paused)<br>    stream_toggle_pause(<span class="hljs-keyword">is</span>);<br></code></pre></td></tr></table></figure>
+
+<p>这样seek的处理就完成了。</p>
+<p>前面seek、暂停、恢复都可以通过调用ffmpeg的函数，辅助一些流程控制完成封装。</p>
+<p>而读取缓冲区的控制可以说是ffplay原生的特性了。</p>
+<p>是否需要控制缓冲区大小由变量infinite_buffer决定。infinite_buffer为1表示当前buffer无限大，不需要使用缓冲区限制策略。</p>
+<p>infinite_buffer是可选选项，但在文件是实时协议时，且用户未指定时，这个值会被强制为1：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">is_realtime</span><span class="hljs-params">(AVFormatContext *s)</span><br>&#123;<br>    <span class="hljs-keyword">if</span>(   !<span class="hljs-built_in">strcmp</span>(s-&gt;iformat-&gt;name, <span class="hljs-string">&quot;rtp&quot;</span>)<br>       || !<span class="hljs-built_in">strcmp</span>(s-&gt;iformat-&gt;name, <span class="hljs-string">&quot;rtsp&quot;</span>)<br>       || !<span class="hljs-built_in">strcmp</span>(s-&gt;iformat-&gt;name, <span class="hljs-string">&quot;sdp&quot;</span>)<br>    )<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br><br>    <span class="hljs-keyword">if</span>(s-&gt;pb &amp;&amp; (   !<span class="hljs-built_in">strncmp</span>(s-&gt;url, <span class="hljs-string">&quot;rtp:&quot;</span>, <span class="hljs-number">4</span>)<br>                 || !<span class="hljs-built_in">strncmp</span>(s-&gt;url, <span class="hljs-string">&quot;udp:&quot;</span>, <span class="hljs-number">4</span>)<br>                )<br>    )<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br>……<br>is-&gt;realtime = is_realtime(ic);<br>……<br><span class="hljs-keyword">if</span> (infinite_buffer &lt; <span class="hljs-number">0</span> &amp;&amp; is-&gt;realtime)<br>    infinite_buffer = <span class="hljs-number">1</span>;<br></code></pre></td></tr></table></figure>
+
+<p>我们看下需控制缓冲区大小的情况：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (infinite_buffer&lt;<span class="hljs-number">1</span> &amp;&amp;<br>    (is-&gt;audioq.size + is-&gt;videoq.size + is-&gt;subtitleq.size &gt; MAX_QUEUE_SIZE<br>    || (stream_has_enough_packets(is-&gt;audio_st, is-&gt;audio_stream, &amp;is-&gt;audioq) &amp;&amp;<br>        stream_has_enough_packets(is-&gt;video_st, is-&gt;video_stream, &amp;is-&gt;videoq) &amp;&amp;<br>        stream_has_enough_packets(is-&gt;subtitle_st, is-&gt;subtitle_stream, &amp;is-&gt;subtitleq)))) &#123;<br>    <span class="hljs-comment">/* wait 10 ms */</span><br>    SDL_LockMutex(wait_mutex);<br>    SDL_CondWaitTimeout(is-&gt;continue_read_thread, wait_mutex, <span class="hljs-number">10</span>);<br>    SDL_UnlockMutex(wait_mutex);<br>    <span class="hljs-keyword">continue</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>缓冲区满有两种可能：</p>
+<ol>
+<li>audioq，videoq，subtitleq三个PacketQueue的总字节数达到了MAX_QUEUE_SIZE（15M）</li>
+<li>音频、视频、字幕流都已有够用的包（stream_has_enough_packets）</li>
+</ol>
+<p>第一种好理解，看下第二种中的stream_has_enough_packets：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">stream_has_enough_packets</span><span class="hljs-params">(AVStream *st, <span class="hljs-type">int</span> stream_id, PacketQueue *<span class="hljs-built_in">queue</span>)</span> &#123;<br>    <span class="hljs-keyword">return</span> stream_id &lt; <span class="hljs-number">0</span> ||<br>           <span class="hljs-built_in">queue</span>-&gt;abort_request ||<br>           (st-&gt;disposition &amp; AV_DISPOSITION_ATTACHED_PIC) ||<br>           <span class="hljs-built_in">queue</span>-&gt;nb_packets &gt; MIN_FRAMES &amp;&amp; (!<span class="hljs-built_in">queue</span>-&gt;duration || av_q2d(st-&gt;time_base) * <span class="hljs-built_in">queue</span>-&gt;duration &gt; <span class="hljs-number">1.0</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在满足PacketQueue总时长为0，或总时长超过1s的前提下：</p>
+<p>有这么几种情况包是够用的：</p>
+<ol>
+<li>流没有打开（stream_id &lt; 0）</li>
+<li>有退出请求（queue-&gt;abort_request）</li>
+<li>配置了AV_DISPOSITION_ATTACHED_PIC？（这个还不理解，后续分析attachement时回头看看）</li>
+<li>队列内包个数大于MIN_FRAMES（&#x3D;25）</li>
+</ol>
+<p>挺饶地，没有深刻体会其设计用意，不评论。</p>
+<p>上述的几种处理都还是在正常播放流程内，接下来是对播放已完成情况的处理。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (!is-&gt;paused &amp;&amp;<br>    (!is-&gt;audio_st || (is-&gt;auddec.finished == is-&gt;audioq.serial &amp;&amp; frame_queue_nb_remaining(&amp;is-&gt;sampq) == <span class="hljs-number">0</span>)) &amp;&amp;<br>    (!is-&gt;video_st || (is-&gt;viddec.finished == is-&gt;videoq.serial &amp;&amp; frame_queue_nb_remaining(&amp;is-&gt;pictq) == <span class="hljs-number">0</span>))) &#123;<br>    <span class="hljs-keyword">if</span> (loop != <span class="hljs-number">1</span> &amp;&amp; (!loop || --loop)) &#123;<br>        stream_seek(is, start_time != AV_NOPTS_VALUE ? start_time : <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);<br>    &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (autoexit) &#123;<br>        ret = AVERROR_EOF;<br>        <span class="hljs-keyword">goto</span> fail;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里判断播放已完成的条件依然很“ffplay”，需要满足：</p>
+<ol>
+<li>不在暂停状态</li>
+<li>音频未打开，或者打开了，但是解码已解码完毕，serial等于PacketQueue的serial，并且PacketQueue中没有节点了</li>
+<li>视频未打开，或者打开了，但是解码已解码完毕，serial等于PacketQueue的serial，并且PacketQueue中没有节点了</li>
+</ol>
+<p>在确认已结束的情况下，用户有两个变量可以控制播放器行为：</p>
+<ol>
+<li>loop: 控制播放次数（当前这次也算在内，也就是最小就是1次了），0表示无限次</li>
+<li>autoexit：自动退出，也就是播放完成后自动退出。</li>
+</ol>
+<p>loop条件简化的非常不友好，其意思是：如果loop&#x3D;&#x3D;1，那么已经播了1次了，无需再seek重新播放；如果loop不是1，&#x3D;&#x3D;0，随意，无限次循环；减1后还大于0（–loop），也允许循环。也就是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">allow_loop</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-keyword">if</span> (loop == <span class="hljs-number">1</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>    <span class="hljs-keyword">if</span> (loop == <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br><br>    --loop;<br>    <span class="hljs-keyword">if</span> (loop &gt; <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>前面讲了很多读线程主循环内的处理，比如暂停、seek、结束loop处理等，接下来就看看真正读的代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs c">ret = av_read_frame(ic, pkt);<br><span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>    <span class="hljs-comment">//文件读取完了，调用packet_queue_put_nullpacket通知解码线程</span><br>    <span class="hljs-keyword">if</span> ((ret == AVERROR_EOF || avio_feof(ic-&gt;pb)) &amp;&amp; !is-&gt;eof) &#123;<br>        <span class="hljs-keyword">if</span> (is-&gt;video_stream &gt;= <span class="hljs-number">0</span>)<br>            packet_queue_put_nullpacket(&amp;is-&gt;videoq, is-&gt;video_stream);<br>        <span class="hljs-keyword">if</span> (is-&gt;audio_stream &gt;= <span class="hljs-number">0</span>)<br>            packet_queue_put_nullpacket(&amp;is-&gt;audioq, is-&gt;audio_stream);<br>        <span class="hljs-keyword">if</span> (is-&gt;subtitle_stream &gt;= <span class="hljs-number">0</span>)<br>            packet_queue_put_nullpacket(&amp;is-&gt;subtitleq, is-&gt;subtitle_stream);<br>        is-&gt;eof = <span class="hljs-number">1</span>;<br>    &#125;<br>    <span class="hljs-comment">//发生错误了，退出主循环</span><br>    <span class="hljs-keyword">if</span> (ic-&gt;pb &amp;&amp; ic-&gt;pb-&gt;error)<br>        <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-comment">//如果都不是，可能只是要等一等</span><br>    SDL_LockMutex(wait_mutex);<br>    SDL_CondWaitTimeout(is-&gt;continue_read_thread, wait_mutex, <span class="hljs-number">10</span>);<br>    SDL_UnlockMutex(wait_mutex);<br>    <span class="hljs-keyword">continue</span>;<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>    is-&gt;eof = <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-comment">/* check if packet is in play range specified by user, then queue, otherwise discard */</span><br>stream_start_time = ic-&gt;streams[pkt-&gt;stream_index]-&gt;start_time;<br>pkt_ts = pkt-&gt;pts == AV_NOPTS_VALUE ? pkt-&gt;dts : pkt-&gt;pts;<br>pkt_in_play_range = duration == AV_NOPTS_VALUE ||<br>        (pkt_ts - (stream_start_time != AV_NOPTS_VALUE ? stream_start_time : <span class="hljs-number">0</span>)) *<br>        av_q2d(ic-&gt;streams[pkt-&gt;stream_index]-&gt;time_base) -<br>        (<span class="hljs-type">double</span>)(start_time != AV_NOPTS_VALUE ? start_time : <span class="hljs-number">0</span>) / <span class="hljs-number">1000000</span><br>        &lt;= ((<span class="hljs-type">double</span>)duration / <span class="hljs-number">1000000</span>);<br><br><span class="hljs-comment">//如果在时间范围内，那么根据stream_index，放入到视频、音频、会字幕的PacketQueue中</span><br><span class="hljs-keyword">if</span> (pkt-&gt;stream_index == is-&gt;audio_stream &amp;&amp; pkt_in_play_range) &#123;<br>    packet_queue_put(&amp;is-&gt;audioq, pkt);<br>&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (pkt-&gt;stream_index == is-&gt;video_stream &amp;&amp; pkt_in_play_range<br>           &amp;&amp; !(is-&gt;video_st-&gt;disposition &amp; AV_DISPOSITION_ATTACHED_PIC)) &#123;<br>    packet_queue_put(&amp;is-&gt;videoq, pkt);<br>&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (pkt-&gt;stream_index == is-&gt;subtitle_stream &amp;&amp; pkt_in_play_range) &#123;<br>    packet_queue_put(&amp;is-&gt;subtitleq, pkt);<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>    av_packet_unref(pkt);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>看起来很长，实际比上述各种特殊流程的处理都直白，主要为：</p>
+<ol>
+<li>av_read_frame读取一个包(AVPacket)</li>
+<li>返回值处理</li>
+<li>pkt_in_play_range计算</li>
+<li>packet_queue_put放入各自队列，或者丢弃</li>
+</ol>
+<p>步骤1、步骤2、步骤4，都比较直接，看注释即可。</p>
+<p>这里看下pkt_in_play_range的计算，我们把以上代码分解下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int64_t</span> <span class="hljs-title function_">get_stream_start_time</span><span class="hljs-params">(AVFormatContext* ic, <span class="hljs-type">int</span> index)</span> &#123;<br>    <span class="hljs-type">int64_t</span> stream_start_time = ic-&gt;streams[index]-&gt;start_time;<br>    <span class="hljs-keyword">return</span> stream_start_time != AV_NOPTS_VALUE ? stream_start_time : <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-type">int64_t</span> <span class="hljs-title function_">get_pkt_ts</span><span class="hljs-params">(AVPacket* pkt)</span> &#123;<span class="hljs-comment">//ts: timestamp（时间戳）的缩写</span><br>    <span class="hljs-keyword">return</span> pkt-&gt;pts == AV_NOPTS_VALUE ? pkt-&gt;dts : pkt-&gt;pts;<br>&#125;<br><br><span class="hljs-type">double</span> <span class="hljs-title function_">ts_as_second</span><span class="hljs-params">(<span class="hljs-type">int64_t</span> ts，AVFormatContext* ic，<span class="hljs-type">int</span> index)</span> &#123;<br>    <span class="hljs-keyword">return</span> ts * av_q2d(ic-&gt;streams[index]-&gt;time_base);<br>&#125; <br><br><span class="hljs-type">double</span> <span class="hljs-title function_">get_ic_start_time</span><span class="hljs-params">(AVFormatContext* ic)</span> &#123;<span class="hljs-comment">//ic中的时间单位是us</span><br>    <span class="hljs-keyword">return</span> (start_time != AV_NOPTS_VALUE ? start_time : <span class="hljs-number">0</span>) / <span class="hljs-number">1000000</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>有了这些函数，就可以计算pkt_in_play_range了：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">is_pkt_in_play_range</span><span class="hljs-params">(AVFormatContext* ic, AVPacket* pkt)</span> &#123;<br>    <span class="hljs-keyword">if</span> (duration == AV_NOPTS_VALUE) <span class="hljs-comment">//如果当前流无法计算总时长，按无限时长处理</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br><br>    <span class="hljs-comment">//计算pkt相对stream位置</span><br>    <span class="hljs-type">int64_t</span> stream_ts = get_pkt_ts(pkt) - get_stream_start_time(ic, pkt-&gt;stream_index);<br>    <span class="hljs-type">double</span> stream_ts_s = ts_as_second(stream_ts, ic, pkt-&gt;stream_index);<br><br>    <span class="hljs-comment">//计算pkt相对ic位置</span><br>    <span class="hljs-type">double</span> ic_ts = stream_ts_s - get_ic_start_time(ic);<br><br>    <span class="hljs-comment">//是否在时间范围内</span><br>    <span class="hljs-keyword">return</span> ic_ts &lt;= ((<span class="hljs-type">double</span>)duration / <span class="hljs-number">1000000</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ffmpeg/" class="print-no-link">#ffmpeg</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>ffplay read_thread 分析</div>
+      <div>https://yxibng.github.io/2022/03/20/ffmpeg/2022-03-20-ffplay read_thread 分析/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>yxibng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年3月20日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/03/21/c++/2022-03-21-git%20hook%20clang-format/" title="git hooks  结合 clang-format 提交前自动格式化代码">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">git hooks  结合 clang-format 提交前自动格式化代码</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/03/19/c++/2022-03-19-pragma%20once%20%E7%94%A8%E6%B3%95%E6%80%BB%E7%BB%93/" title="#pragma once 用法总结">
+                        <span class="hidden-mobile">#pragma once 用法总结</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
