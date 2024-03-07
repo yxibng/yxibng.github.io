@@ -1,0 +1,692 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="yxibng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="ClangFormat ClangFormat 描述了一组构建在 LibFormat 之上的工具。它可以以多种方式支持您的工作流，包括独立工具和编辑器集成。 其中独立的工具就是clang-format, 可用于格式化 c&#x2F;c + +&#x2F;Java&#x2F;JavaScript&#x2F;JSON&#x2F;Objective-C&#x2F;Protobuf&#x2F;c # 代码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="git hooks  结合 clang-format 提交前自动格式化代码">
+<meta property="og:url" content="https://yxibng.github.io/2022/03/21/c++/2022-03-21-git%20hook%20clang-format/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:description" content="ClangFormat ClangFormat 描述了一组构建在 LibFormat 之上的工具。它可以以多种方式支持您的工作流，包括独立工具和编辑器集成。 其中独立的工具就是clang-format, 可用于格式化 c&#x2F;c + +&#x2F;Java&#x2F;JavaScript&#x2F;JSON&#x2F;Objective-C&#x2F;Protobuf&#x2F;c # 代码">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-03-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-06T11:53:13.564Z">
+<meta property="article:author" content="yxibng">
+<meta property="article:tag" content="c++">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>git hooks  结合 clang-format 提交前自动格式化代码 - yxibng</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"yxibng.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>yxibng</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="git hooks  结合 clang-format 提交前自动格式化代码"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-03-21 00:00" pubdate>
+          2022年3月21日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          586 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          5 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">git hooks  结合 clang-format 提交前自动格式化代码</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="ClangFormat"><a href="#ClangFormat" class="headerlink" title="ClangFormat "></a><a target="_blank" rel="noopener" href="https://clang.llvm.org/docs/ClangFormat.html">ClangFormat </a></h2><p>ClangFormat 描述了一组构建在 <a href="(https://clang.llvm.org/docs/LibFormat.html)">LibFormat</a> 之上的工具。它可以以多种方式支持您的工作流，包括独立工具和编辑器集成。</p>
+<p>其中独立的工具就是clang-format, 可用于格式化 c&#x2F;c + +&#x2F;Java&#x2F;JavaScript&#x2F;JSON&#x2F;Objective-C&#x2F;Protobuf&#x2F;c # 代码。</p>
+<p>clang-format的默认配置文件是<code>.clang-format</code>或<code>_clang-format</code>, 也可以通过<code>clang-format -style=file</code>指定配置文件。</p>
+<p><code>.clang-format</code> 使用yaml格式，指定了如何对文件格式化的规则。</p>
+<p>可以基于预定义的样式，快速创建<code>.clang-format</code>文件。</p>
+<ul>
+<li><p><code>LLVM</code> A style complying with the <a target="_blank" rel="noopener" href="https://llvm.org/docs/CodingStandards.html">LLVM coding standards</a></p>
+</li>
+<li><p><code>Google</code> A style complying with <a target="_blank" rel="noopener" href="https://google.github.io/styleguide/cppguide.html">Google’s C++ style guide</a></p>
+</li>
+<li><p><code>Chromium</code> A style complying with <a target="_blank" rel="noopener" href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/styleguide/styleguide.md">Chromium’s style guide</a></p>
+</li>
+<li><p><code>Mozilla</code> A style complying with <a target="_blank" rel="noopener" href="https://firefox-source-docs.mozilla.org/code-quality/coding-style/index.html">Mozilla’s style guide</a></p>
+</li>
+<li><p><code>WebKit</code> A style complying with <a target="_blank" rel="noopener" href="https://www.webkit.org/coding/coding-style.html">WebKit’s style guide</a></p>
+</li>
+<li><p><code>Microsoft</code> A style complying with <a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference">Microsoft’s style guide</a></p>
+</li>
+<li><p><code>GNU</code> A style complying with the <a target="_blank" rel="noopener" href="https://www.gnu.org/prep/standards/standards.html">GNU coding standards</a></p>
+</li>
+</ul>
+<p>例如生成llvm风格的：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs lua">clang-<span class="hljs-built_in">format</span> -style=llvm -<span class="hljs-built_in">dump</span>-<span class="hljs-built_in">config</span> &gt; .clang-<span class="hljs-built_in">format</span><br></code></pre></td></tr></table></figure>
+
+<p> 然后可以基于生成的<code>.clang-format</code>文件修改参数，定制自己的样式。</p>
+<p>更多参考： <a target="_blank" rel="noopener" href="https://clang.llvm.org/docs/ClangFormatStyleOptions.html">Clang-Format Style Options </a></p>
+<p>mac 下安装 clang-format</p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm"><span class="hljs-keyword">brew </span><span class="hljs-keyword">install </span>clang-format<br></code></pre></td></tr></table></figure>
+
+<p>将生成的<code>.clang-format</code>放入工程目录，执行命令格式化文件</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs css">clang-format -<span class="hljs-selector-tag">i</span> xx<span class="hljs-selector-class">.cpp</span><br></code></pre></td></tr></table></figure>
+
+<p><code>-i</code>格式化当前文件，并将格式化后的内容输出到当前文件。不加<code>-i</code>会将格式化的内容输出到标准输出。</p>
+<p>然后我们希望在提交的时候根据我们的配置，自动格式化代码，如何做呢？</p>
+<p>可以通过git hooks 结合clang-format 在提交的时候自动格式化我们的代码。</p>
+<h2 id="pre-commit"><a href="#pre-commit" class="headerlink" title="pre-commit"></a><a target="_blank" rel="noopener" href="https://pre-commit.com/">pre-commit</a></h2><blockquote>
+<p>A framework for managing and maintaining multi-language pre-commit hooks.</p>
+</blockquote>
+<p> 安装：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs sql">$ brew install pre<span class="hljs-operator">-</span><span class="hljs-keyword">commit</span><br># 查看版本<br>$ pre<span class="hljs-operator">-</span><span class="hljs-keyword">commit</span> <span class="hljs-comment">--version</span><br>pre<span class="hljs-operator">-</span><span class="hljs-keyword">commit</span> <span class="hljs-number">2.17</span><span class="hljs-number">.0</span><br></code></pre></td></tr></table></figure>
+
+
+
+<p>添加配置文件<code>.pre-commit-config.yaml</code>，通过<a target="_blank" rel="noopener" href="https://pre-commit.com/#pre-commit-sample-config"><code>pre-commit sample-config</code></a></p>
+<p>命令快速生成一个基本的配置文件。 更多关于文件中选项的配置，参考<a target="_blank" rel="noopener" href="https://pre-commit.com/#plugins">pre-commit</a></p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs smali">➜  ~ pre-commit sample-config<br><span class="hljs-comment"># See https://pre-commit.com for more information</span><br><span class="hljs-comment"># See https://pre-commit.com/hooks.html for more hooks</span><br>repos:<br>-   repo: https://github.com/pre-commit/pre-commit-hooks<br>    rev: v3.2.0<br>    hooks:<br>    -   id: trailing-whitespace<br>    -   id: end-of-file-fixer<br>    -   id:<span class="hljs-built_in"> check-yaml</span><br><span class="hljs-built_in"></span>    -   id: check-added-large-files<br></code></pre></td></tr></table></figure>
+
+<p>上面配置指定了如何去格式化python代码，pre commit 支持格式化其他的编程语言，参考</p>
+<p><a target="_blank" rel="noopener" href="https://pre-commit.com/hooks.html">supported hooks</a>查看所有支持的语言。</p>
+<p>想结合clang-format对工程中的c++代码自动格式化。在<a target="_blank" rel="noopener" href="https://pre-commit.com/hooks.html">supported hooks</a>找到了<a target="_blank" rel="noopener" href="https://github.com/doublify/pre-commit-clang-format">GitHub - doublify&#x2F;pre-commit-clang-format: ClangFormat hook for pre-commit</a></p>
+<p>如何使用呢?</p>
+<ol>
+<li><p>在工程中创建<code>.pre-commit-config.yaml</code>文件</p>
+</li>
+<li><p>配置<code>.pre-commit-config.yaml</code>文件</p>
+<figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext"><span class="hljs-attribute">repos</span><span class="hljs-punctuation">:</span><br><span class="hljs-bullet">-</span> <span class="hljs-string">  repo: https://github.com/doublify/pre-commit-clang-format.git</span><br>    <span class="hljs-attribute">rev</span><span class="hljs-punctuation">:</span> <span class="hljs-string">62302476d0da01515660132d76902359bed0f782</span><br>    <span class="hljs-attribute">hooks</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">  id: clang-format</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>安装git hooks 脚本</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql">$ pre<span class="hljs-operator">-</span><span class="hljs-keyword">commit</span> install<br>pre<span class="hljs-operator">-</span><span class="hljs-keyword">commit</span> installed <span class="hljs-keyword">at</span> .git<span class="hljs-operator">/</span>hooks<span class="hljs-operator">/</span>pre<span class="hljs-operator">-</span><span class="hljs-keyword">commit</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>(可选)手动调用pre commit，看看格式化后的效果</p>
+</li>
+</ol>
+   <figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs gams"><span class="hljs-symbol">$</span> pre-commit run --<span class="hljs-keyword">all</span>-<span class="hljs-keyword">files</span><br></code></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>调用<code>git commit</code>, 会触发git hook，调用<code>clang-format</code>自动化格式代码。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/c/" class="print-no-link">#c++</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>git hooks  结合 clang-format 提交前自动格式化代码</div>
+      <div>https://yxibng.github.io/2022/03/21/c++/2022-03-21-git hook clang-format/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>yxibng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年3月21日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/03/22/ffmpeg/2022-03-22-ffplay%20video_thread%20%E5%88%86%E6%9E%90/" title="ffplay video_thread 分析">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">ffplay video_thread 分析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/03/20/ffmpeg/2022-03-20-ffplay%20read_thread%20%E5%88%86%E6%9E%90/" title="ffplay read_thread 分析">
+                        <span class="hidden-mobile">ffplay read_thread 分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

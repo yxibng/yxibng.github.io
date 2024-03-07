@@ -1,0 +1,705 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="yxibng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="调试ffmpeg源码教程  如何使用vscode在macOS平台调试ffmpeg  使用Xcode调试ffmpeg          今天用Xcode调试分析 encode_video.c 配置ffmpeg 支持libx264和h264_videotoolbox来进行视频编码1234cd ffmpeg.&#x2F;configure  --disable-optimizations --disable-st">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ffmpeg example 2.视频编码">
+<meta property="og:url" content="https://yxibng.github.io/2022/03/11/ffmpeg/2022-03-11-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%202/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:description" content="调试ffmpeg源码教程  如何使用vscode在macOS平台调试ffmpeg  使用Xcode调试ffmpeg          今天用Xcode调试分析 encode_video.c 配置ffmpeg 支持libx264和h264_videotoolbox来进行视频编码1234cd ffmpeg.&#x2F;configure  --disable-optimizations --disable-st">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16469917993141646991798582.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16469918543121646991854240.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16469918963141646991895699.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16469965503041646996550013.png">
+<meta property="article:published_time" content="2022-03-10T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-06T11:53:13.565Z">
+<meta property="article:author" content="yxibng">
+<meta property="article:tag" content="ffmpeg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16469917993141646991798582.png">
+  
+  
+  
+  <title>ffmpeg example 2.视频编码 - yxibng</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"yxibng.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>yxibng</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="ffmpeg example 2.视频编码"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-03-11 00:00" pubdate>
+          2022年3月11日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">ffmpeg example 2.视频编码</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>调试ffmpeg源码教程</p>
+<ul>
+<li><p><a href="https://yxibng.github.io/2022/03/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8vscode%E5%9C%A8macOS%E5%B9%B3%E5%8F%B0%E8%B0%83%E8%AF%95ffmpeg/">如何使用vscode在macOS平台调试ffmpeg</a></p>
+</li>
+<li><p><a href="https://yxibng.github.io/2022/03/%E4%BD%BF%E7%94%A8Xcode%E8%B0%83%E8%AF%95ffmpeg/">使用Xcode调试ffmpeg</a></p>
+</li>
+</ul>
+<p>      </p>
+<p>今天用Xcode调试分析 <code>encode_video.c</code></p>
+<h2 id="配置ffmpeg-支持libx264和h264-videotoolbox来进行视频编码"><a href="#配置ffmpeg-支持libx264和h264-videotoolbox来进行视频编码" class="headerlink" title="配置ffmpeg 支持libx264和h264_videotoolbox来进行视频编码"></a>配置ffmpeg 支持libx264和h264_videotoolbox来进行视频编码</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">cd ffmpeg<br>./configure  --disable-optimizations --disable-stripping --enable-debug=3 --disable-doc --enable-libx264 --enable-gpl --enable-videotoolboxm<br>make -j 16<br>make examples<br></code></pre></td></tr></table></figure>
+
+<p>如果没有libx264， 通过 <a target="_blank" rel="noopener" href="https://brew.sh/">Homebrew</a> 安装一下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">brew install x264<br></code></pre></td></tr></table></figure>
+
+<p>ffmpeg  通过<a target="_blank" rel="noopener" href="https://www.freedesktop.org/wiki/Software/pkg-config/">pkg-config</a>可以找到x264对应的头文件和库的路径</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">➜  ffmpeg git:(master) ✗ pkg-config --libs --cflags x264<br>-DX264_API_IMPORTS -I/opt/homebrew/Cellar/x264/r3060/include -L/opt/homebrew/Cellar/x264/r3060/lib -lx264<br></code></pre></td></tr></table></figure>
+
+<h2 id="配置Xcode"><a href="#配置Xcode" class="headerlink" title="配置Xcode"></a>配置Xcode</h2><p>添加target，配置路径</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16469917993141646991798582.png" srcset="/img/loading.gif" lazyload></p>
+<p>配置可执行文件，启动参数</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16469918543121646991854240.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16469918963141646991895699.png" srcset="/img/loading.gif" lazyload></p>
+<p>encode_video_g 接受两个参数，</p>
+<ol>
+<li><p>视频编码数据的写入路径</p>
+</li>
+<li><p>编码器名字（libx264 libx264rgb h264_videotoolbox）</p>
+</li>
+</ol>
+<p>我们使用h264编码器，查看ffmpeg 支持的h264编码器</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">ffmpeg -codecs | grep 264<br>DEV.LS h264                 H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 (encoders: libx264 libx264rgb h264_videotoolbox )<br></code></pre></td></tr></table></figure>
+
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><h3 id="main函数"><a href="#main函数" class="headerlink" title="main函数"></a>main函数</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span> **argv)</span><br>&#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *filename, *codec_name;<br>    <span class="hljs-type">const</span> AVCodec *codec;<br>    AVCodecContext *c= <span class="hljs-literal">NULL</span>;<br>    <span class="hljs-type">int</span> i, ret, x, y;<br>    FILE *f;<br>    AVFrame *frame;<br>    AVPacket *pkt;<br>    <span class="hljs-type">uint8_t</span> endcode[] = &#123; <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0xb7</span> &#125;;<br><br>    <span class="hljs-keyword">if</span> (argc &lt;= <span class="hljs-number">2</span>) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Usage: %s &lt;output file&gt; &lt;codec name&gt;\n&quot;</span>, argv[<span class="hljs-number">0</span>]);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">0</span>);<br>    &#125;<br>    filename = argv[<span class="hljs-number">1</span>];<br>    codec_name = argv[<span class="hljs-number">2</span>];<br><br>    <span class="hljs-comment">/* 根据编码器名字，找到对应的编码器，编码器的名字如libx264,h264_videotoolbox */</span><br>    codec = avcodec_find_encoder_by_name(codec_name);<br>    <span class="hljs-keyword">if</span> (!codec) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Codec &#x27;%s&#x27; not found\n&quot;</span>, codec_name);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-comment">/* 创建编码器上下文 */</span><br>    c = avcodec_alloc_context3(codec);<br>    <span class="hljs-keyword">if</span> (!c) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Could not allocate video codec context\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-comment">/* 创建 pkt 用于保存编码后的数据 */</span><br>    pkt = av_packet_alloc();<br>    <span class="hljs-keyword">if</span> (!pkt)<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    <span class="hljs-comment">/* 配置编码参数 */</span><br>    <span class="hljs-comment">//码率400000</span><br>    c-&gt;bit_rate = <span class="hljs-number">400000</span>;<br>    <span class="hljs-comment">//编码分辨率，宽高必须能被2整除</span><br>    c-&gt;width = <span class="hljs-number">352</span>;<br>    c-&gt;height = <span class="hljs-number">288</span>;<br>    <span class="hljs-comment">/*</span><br><span class="hljs-comment">     编码的时间基,可以理解为刻度，与 pts 有关</span><br><span class="hljs-comment">     (AVRational)&#123;1, 25&#125; 将1秒钟分成25份，每一份代表 1/25 秒</span><br><span class="hljs-comment">     */</span><br>    c-&gt;time_base = (AVRational)&#123;<span class="hljs-number">1</span>, <span class="hljs-number">25</span>&#125;;<br>    <span class="hljs-comment">/* 编码帧率 25 帧 */</span><br>    c-&gt;framerate = (AVRational)&#123;<span class="hljs-number">25</span>, <span class="hljs-number">1</span>&#125;;<br><br>    <span class="hljs-comment">/* 关键帧间隔，每10帧产生一个关键帧, 如果frame-&gt;pict_type 被设置为AV_PICTURE_TYPE_I</span><br><span class="hljs-comment">     gop_size的值会被忽略，编码器不产出B帧和P帧，只会编码I帧</span><br><span class="hljs-comment">     */</span><br>    c-&gt;gop_size = <span class="hljs-number">10</span>;<br>    <span class="hljs-comment">/* b帧的个数，实时通信一般设置为0 */</span><br>    c-&gt;max_b_frames = <span class="hljs-number">1</span>;<br>    <span class="hljs-comment">/* 编码的数据源的格式，yuv420p */</span><br>    c-&gt;pix_fmt = AV_PIX_FMT_YUV420P;<br>    <span class="hljs-comment">/* 如果使用h264编码器，设置preset 为slow */</span><br>    <span class="hljs-keyword">if</span> (codec-&gt;id == AV_CODEC_ID_H264)<br>        av_opt_set(c-&gt;priv_data, <span class="hljs-string">&quot;preset&quot;</span>, <span class="hljs-string">&quot;slow&quot;</span>, <span class="hljs-number">0</span>);<br><br>    <span class="hljs-comment">/*</span><br><span class="hljs-comment">     打开编码器</span><br><span class="hljs-comment">     */</span><br>    ret = avcodec_open2(c, codec, <span class="hljs-literal">NULL</span>);<br>    <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Could not open codec: %s\n&quot;</span>, av_err2str(ret));<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-comment">/* 打开输出文件 */</span><br>    f = fopen(filename, <span class="hljs-string">&quot;wb&quot;</span>);<br>    <span class="hljs-keyword">if</span> (!f) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Could not open %s\n&quot;</span>, filename);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-comment">/* 创建AVFrame用于存放待编码的数据，yuv */</span><br>    frame = av_frame_alloc();<br>    <span class="hljs-keyword">if</span> (!frame) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Could not allocate video frame\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-comment">/* 设置frame 的颜色格式，宽高 */</span><br>    frame-&gt;format = c-&gt;pix_fmt;<br>    frame-&gt;width  = c-&gt;width;<br>    frame-&gt;height = c-&gt;height;<br>    <span class="hljs-comment">/* 根据上面设置的参数，给frame 内部的 buf 分配内存 */</span><br>    ret = av_frame_get_buffer(frame, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Could not allocate the video frame data\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-comment">/* 编码1秒钟的数据，上面设置的编码帧率是 25 帧  */</span><br>    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">25</span>; i++) &#123;<br>        fflush(<span class="hljs-built_in">stdout</span>);<br>        <span class="hljs-comment">/*</span><br><span class="hljs-comment">         确保frame中的数据是可写的。</span><br><span class="hljs-comment">         刚开始调用 av_frame_get_buffer()，frame中的数据是可写的。</span><br><span class="hljs-comment">         后面将frame送给编码器去编码，可能被编码器引用，此时frame是不可写的。</span><br><span class="hljs-comment">         调用av_frame_make_writable()会检查frame 是否可写，</span><br><span class="hljs-comment">         如果不可写，会给frame内部重新创建新的buffer。</span><br><span class="hljs-comment">         */</span><br>        ret = av_frame_make_writable(frame);<br>        <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>)<br>            <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br><br>        <span class="hljs-comment">/* 给frame填充数据，我们设置的是yuv420，这里填充假数据 */</span><br>        <span class="hljs-comment">/* Y */</span><br>        <span class="hljs-keyword">for</span> (y = <span class="hljs-number">0</span>; y &lt; c-&gt;height; y++) &#123;<br>            <span class="hljs-keyword">for</span> (x = <span class="hljs-number">0</span>; x &lt; c-&gt;width; x++) &#123;<br>                frame-&gt;data[<span class="hljs-number">0</span>][y * frame-&gt;linesize[<span class="hljs-number">0</span>] + x] = x + y + i * <span class="hljs-number">3</span>;<br>            &#125;<br>        &#125;<br>        <span class="hljs-comment">/* Cb and Cr */</span><br>        <span class="hljs-keyword">for</span> (y = <span class="hljs-number">0</span>; y &lt; c-&gt;height/<span class="hljs-number">2</span>; y++) &#123;<br>            <span class="hljs-keyword">for</span> (x = <span class="hljs-number">0</span>; x &lt; c-&gt;width/<span class="hljs-number">2</span>; x++) &#123;<br>                frame-&gt;data[<span class="hljs-number">1</span>][y * frame-&gt;linesize[<span class="hljs-number">1</span>] + x] = <span class="hljs-number">128</span> + y + i * <span class="hljs-number">2</span>;<br>                frame-&gt;data[<span class="hljs-number">2</span>][y * frame-&gt;linesize[<span class="hljs-number">2</span>] + x] = <span class="hljs-number">64</span> + x + i * <span class="hljs-number">5</span>;<br>            &#125;<br>        &#125;<br><br>        <span class="hljs-comment">/*</span><br><span class="hljs-comment">         设置frame的pts</span><br><span class="hljs-comment">         我们设置的是每秒25帧</span><br><span class="hljs-comment">         对应的时间转成秒是 pts * av_q2d(c-&gt;time_base)</span><br><span class="hljs-comment">         */</span><br>        frame-&gt;pts = i;<br><br>        <span class="hljs-comment">/*</span><br><span class="hljs-comment">         将frame 送给编码器编码，将编码后的数据写入文件</span><br><span class="hljs-comment">         */</span><br>        encode(c, frame, pkt, f);<br>    &#125;<br><br>    <span class="hljs-comment">/*</span><br><span class="hljs-comment">     冲洗编码器，将剩余的编码后的数据读出来，写入文件</span><br><span class="hljs-comment">     */</span><br>    encode(c, <span class="hljs-literal">NULL</span>, pkt, f);<br><br>    <span class="hljs-comment">/* Add sequence end code to have a real MPEG file.</span><br><span class="hljs-comment">       It makes only sense because this tiny examples writes packets</span><br><span class="hljs-comment">       directly. This is called &quot;elementary stream&quot; and only works for some</span><br><span class="hljs-comment">       codecs. To create a valid file, you usually need to write packets</span><br><span class="hljs-comment">       into a proper file format or protocol; see muxing.c.</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-keyword">if</span> (codec-&gt;id == AV_CODEC_ID_MPEG1VIDEO || codec-&gt;id == AV_CODEC_ID_MPEG2VIDEO)<br>        fwrite(endcode, <span class="hljs-number">1</span>, <span class="hljs-keyword">sizeof</span>(endcode), f);<br><br>    <span class="hljs-comment">//关闭文件</span><br>    fclose(f);<br>    <span class="hljs-comment">//释放资源</span><br>    avcodec_free_context(&amp;c);<br>    av_frame_free(&amp;frame);<br>    av_packet_free(&amp;pkt);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ol>
+<li><p>从命令行中输出文件的路径， 使用的编码器名字</p>
+</li>
+<li><p>根据名字找到对应的编码器</p>
+</li>
+<li><p>创建编码器上下文，设置编码器的参数（码率，时间基，帧率，宽高，颜色格式，b帧个数）</p>
+</li>
+<li><p>打开编码器</p>
+</li>
+<li><p>创建AVFrame 保存待编码的数据</p>
+</li>
+<li><p>创建AVPacket保存编码后的数据</p>
+</li>
+<li><p>编码1秒钟的数据</p>
+</li>
+<li><p>冲洗编码器，将剩余数据读出</p>
+</li>
+<li><p>关闭文件，释放资源</p>
+</li>
+</ol>
+<h3 id="encode"><a href="#encode" class="headerlink" title="encode"></a>encode</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">encode</span><span class="hljs-params">(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt,</span><br><span class="hljs-params">                   FILE *outfile)</span><br>&#123;<br>    <span class="hljs-type">int</span> ret;<br><br>    <span class="hljs-comment">/* send the frame to the encoder */</span><br>    <span class="hljs-keyword">if</span> (frame)<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Send frame %3&quot;</span>PRId64<span class="hljs-string">&quot;\n&quot;</span>, frame-&gt;pts);<br><br>    <span class="hljs-comment">//给编码器送frame</span><br>    ret = avcodec_send_frame(enc_ctx, frame);<br>    <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Error sending a frame for encoding\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-keyword">while</span> (ret &gt;= <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-comment">//从编码器读pkt</span><br>        ret = avcodec_receive_packet(enc_ctx, pkt);<br>        <span class="hljs-keyword">if</span> (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)<br>        &#123;<br>            <span class="hljs-comment">//EAGAIN 代表需要继续送入 frame 才可以开始读取</span><br>            <span class="hljs-comment">//AVERROR_EOF 代表编码器已经没有数据可以读了</span><br>            <span class="hljs-keyword">return</span>;<br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Error during encoding\n&quot;</span>);<br>            <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>        &#125;<br><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Write packet %3&quot;</span>PRId64<span class="hljs-string">&quot; (size=%5d)\n&quot;</span>, pkt-&gt;pts, pkt-&gt;size);<br>        <span class="hljs-comment">//将编码后的数据写入文件</span><br>        fwrite(pkt-&gt;data, <span class="hljs-number">1</span>, pkt-&gt;size, outfile);<br>        <span class="hljs-comment">//取消引用pkt</span><br>        av_packet_unref(pkt);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ol>
+<li><p>调用   avcodec_send_frame 给编码器送frame</p>
+</li>
+<li><p>循环调用avcodec_receive_packet 从编码器读pkt</p>
+<ul>
+<li><p>EAGAIN 代表需要继续送入 frame 才可以开始读取</p>
+</li>
+<li><p>AVERROR_EOF 代表编码器已经没有数据可以读了,例如传入空的frame，对编码器进行了flush操作</p>
+</li>
+</ul>
+</li>
+<li><p>将编码后数据写入文件</p>
+</li>
+<li><p>取消引用pkt</p>
+</li>
+</ol>
+<p>最后输出的文件，可以使用ffplay 进行播放</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">➜  /tmp ffplay -i encode_video.h264<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16469965503041646996550013.png" srcset="/img/loading.gif" lazyload></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ffmpeg/" class="print-no-link">#ffmpeg</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>ffmpeg example 2.视频编码</div>
+      <div>https://yxibng.github.io/2022/03/11/ffmpeg/2022-03-11-ffmpeg example 学习 2/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>yxibng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年3月11日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/03/12/ffmpeg/2022-03-12-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%203/" title="ffmpeg example 3.音频编码">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">ffmpeg example 3.音频编码</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/03/10/ffmpeg/2022-03-10-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%201/" title="ffmpeg example 1.解封装，解码学习">
+                        <span class="hidden-mobile">ffmpeg example 1.解封装，解码学习</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

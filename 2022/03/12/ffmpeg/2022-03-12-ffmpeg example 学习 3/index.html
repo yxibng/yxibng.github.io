@@ -1,0 +1,643 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="yxibng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="关于如何源码调试，参考前面的文章ffmpeg example 视频编码 - 掘金 今天分析encode_audio.c学习ffmpeg如何编码音频数据，由于太简单了，直接贴代码 ##main函数 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ffmpeg example 3.音频编码">
+<meta property="og:url" content="https://yxibng.github.io/2022/03/12/ffmpeg/2022-03-12-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%203/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:description" content="关于如何源码调试，参考前面的文章ffmpeg example 视频编码 - 掘金 今天分析encode_audio.c学习ffmpeg如何编码音频数据，由于太简单了，直接贴代码 ##main函数 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-03-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-06T11:53:13.565Z">
+<meta property="article:author" content="yxibng">
+<meta property="article:tag" content="ffmpeg">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>ffmpeg example 3.音频编码 - yxibng</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"yxibng.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>yxibng</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="ffmpeg example 3.音频编码"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-03-12 00:00" pubdate>
+          2022年3月12日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">ffmpeg example 3.音频编码</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>关于如何源码调试，参考前面的文章<a target="_blank" rel="noopener" href="https://juejin.cn/post/7073796134912655367">ffmpeg example 视频编码 - 掘金</a></p>
+<p>今天分析<code>encode_audio.c</code>学习ffmpeg如何编码音频数据，由于太简单了，直接贴代码</p>
+<p>##main函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span> **argv)</span><br>&#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *filename;<br>    <span class="hljs-type">const</span> AVCodec *codec;<br>    AVCodecContext *c= <span class="hljs-literal">NULL</span>;<br>    AVFrame *frame;<br>    AVPacket *pkt;<br>    <span class="hljs-type">int</span> i, j, k, ret;<br>    FILE *f;<br>    <span class="hljs-type">uint16_t</span> *samples;<br>    <span class="hljs-type">float</span> t, tincr;<br><br>    <span class="hljs-keyword">if</span> (argc &lt;= <span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Usage: %s &lt;output file&gt;\n&quot;</span>, argv[<span class="hljs-number">0</span>]);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>    &#125;<br>    filename = argv[<span class="hljs-number">1</span>];<br><br>    <span class="hljs-comment">/* 根据codec_id 找到对应的音频编码器 */</span><br>    codec = avcodec_find_encoder(AV_CODEC_ID_MP2);<br>    <span class="hljs-keyword">if</span> (!codec) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Codec not found\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-comment">/* 创建编码器AVCodecContext上下文 */</span><br>    c = avcodec_alloc_context3(codec);<br>    <span class="hljs-keyword">if</span> (!c) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Could not allocate audio codec context\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-comment">/* 设置码率 */</span><br>    c-&gt;bit_rate = <span class="hljs-number">64000</span>;<br><br>    <span class="hljs-comment">/* 采样格式 */</span><br>    c-&gt;sample_fmt = AV_SAMPLE_FMT_S16;<br>    <span class="hljs-comment">/* 检查编码器是否支持该采样格式 */</span><br>    <span class="hljs-keyword">if</span> (!check_sample_fmt(codec, c-&gt;sample_fmt)) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Encoder does not support sample format %s&quot;</span>,<br>                av_get_sample_fmt_name(c-&gt;sample_fmt));<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-comment">/* select other audio parameters supported by the encoder */</span><br>    <span class="hljs-comment">/* 设置采样率 */</span><br>    c-&gt;sample_rate    = select_sample_rate(codec);<br>    <span class="hljs-comment">/* 声道布局 */</span><br>    c-&gt;channel_layout = select_channel_layout(codec);<br>    <span class="hljs-comment">/* 声道数量 */</span><br>    c-&gt;channels       = av_get_channel_layout_nb_channels(c-&gt;channel_layout);<br><br>    <span class="hljs-comment">/* 打开编码器 */</span><br>    <span class="hljs-keyword">if</span> (avcodec_open2(c, codec, <span class="hljs-literal">NULL</span>) &lt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Could not open codec\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-comment">/* 打开写文件 */</span><br>    f = fopen(filename, <span class="hljs-string">&quot;wb&quot;</span>);<br>    <span class="hljs-keyword">if</span> (!f) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Could not open %s\n&quot;</span>, filename);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-comment">/* 创建pkt，保存编码后的数据 */</span><br>    pkt = av_packet_alloc();<br>    <span class="hljs-keyword">if</span> (!pkt) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;could not allocate the packet\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-comment">/* 创建frame， 保存编码前的数据 */</span><br>    frame = av_frame_alloc();<br>    <span class="hljs-keyword">if</span> (!frame) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Could not allocate audio frame\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-comment">/* 给frame 设置参数 */</span><br>    <span class="hljs-comment">// 每个声道有多少个采样</span><br>    frame-&gt;nb_samples     = c-&gt;frame_size;<br>    <span class="hljs-comment">// 采样的格式</span><br>    frame-&gt;format         = c-&gt;sample_fmt;<br>    <span class="hljs-comment">// 声道布局</span><br>    frame-&gt;channel_layout = c-&gt;channel_layout;<br><br>    <span class="hljs-comment">/* 给 frame 内部分配内存 */</span><br>    ret = av_frame_get_buffer(frame, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Could not allocate audio data buffers\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-comment">/* 给frame填充数据，编码，写入文件 */</span><br>    t = <span class="hljs-number">0</span>;<br>    tincr = <span class="hljs-number">2</span> * M_PI * <span class="hljs-number">440.0</span> / c-&gt;sample_rate;<br>    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">200</span>; i++) &#123;<br>        <span class="hljs-comment">/* make sure the frame is writable -- makes a copy if the encoder</span><br><span class="hljs-comment">         * kept a reference internally */</span><br><br>        <span class="hljs-comment">/*确定frame是可写的，如果frame被编码器内部引用，会变成不可写，调用此方法，给frame内部的buf指向新分配的空间，使其变为可写。 */</span><br>        ret = av_frame_make_writable(frame);<br>        <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>)<br>            <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>        <span class="hljs-comment">//获得写入的指针，由于设置的是AV_SAMPLE_FMT_S16，非平面类型，data[0]保存了写入地址。</span><br>        samples = (<span class="hljs-type">uint16_t</span>*)frame-&gt;data[<span class="hljs-number">0</span>];<br><br>        <span class="hljs-keyword">for</span> (j = <span class="hljs-number">0</span>; j &lt; c-&gt;frame_size; j++) &#123;<br>            samples[<span class="hljs-number">2</span>*j] = (<span class="hljs-type">int</span>)(<span class="hljs-built_in">sin</span>(t) * <span class="hljs-number">10000</span>);<br>            <span class="hljs-comment">//多个声道，交错写数据</span><br>            <span class="hljs-keyword">for</span> (k = <span class="hljs-number">1</span>; k &lt; c-&gt;channels; k++)<br>                samples[<span class="hljs-number">2</span>*j + k] = samples[<span class="hljs-number">2</span>*j];<br>            t += tincr;<br>        &#125;<br>        <span class="hljs-comment">//编码，写文件</span><br>        encode(c, frame, pkt, f);<br>    &#125;<br><br>    <span class="hljs-comment">/* 冲洗编码器，读出剩余数据，写入文件 */</span><br>    encode(c, <span class="hljs-literal">NULL</span>, pkt, f);<br><br>    <span class="hljs-comment">//关闭文件</span><br>    fclose(f);<br>    <span class="hljs-comment">//释放资源</span><br>    av_frame_free(&amp;frame);<br>    av_packet_free(&amp;pkt);<br>    avcodec_free_context(&amp;c);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="验证采样格式，找最大采样率，声道数"><a href="#验证采样格式，找最大采样率，声道数" class="headerlink" title="验证采样格式，找最大采样率，声道数"></a>验证采样格式，找最大采样率，声道数</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* check that a given sample format is supported by the encoder */</span><br><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">check_sample_fmt</span><span class="hljs-params">(<span class="hljs-type">const</span> AVCodec *codec, <span class="hljs-keyword">enum</span> AVSampleFormat sample_fmt)</span><br>&#123;<br>    <span class="hljs-comment">//sample_fmts: array of supported sample formats, or NULL if unknown, array is terminated by -1</span><br>    <span class="hljs-comment">//支持的采样格式数组，为空，或者以-1结尾</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">enum</span> <span class="hljs-title">AVSampleFormat</span> *<span class="hljs-title">p</span> =</span> codec-&gt;sample_fmts;<br>    <span class="hljs-comment">//判断设置的采样格式是否支持，1 支持 0 不支持</span><br>    <span class="hljs-keyword">while</span> (*p != AV_SAMPLE_FMT_NONE) &#123;<br>        <span class="hljs-keyword">if</span> (*p == sample_fmt)<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>        p++;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-comment">/* just pick the highest supported samplerate */</span><br><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">select_sample_rate</span><span class="hljs-params">(<span class="hljs-type">const</span> AVCodec *codec)</span><br>&#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">int</span> *p;<br>    <span class="hljs-type">int</span> best_samplerate = <span class="hljs-number">0</span>;<br>    <span class="hljs-comment">//supported_samplerates: array of supported audio samplerates, or NULL if unknown, array is terminated by 0</span><br>    <span class="hljs-comment">//supported_samplerates 保存了支持的采样率的数组，为空，或者以 0 结尾</span><br>    <span class="hljs-keyword">if</span> (!codec-&gt;supported_samplerates)<br>        <span class="hljs-comment">//为空，返回44100</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-number">44100</span>;<br><br>    p = codec-&gt;supported_samplerates;<br>    <span class="hljs-comment">//找到支持的采样率的最大值</span><br>    <span class="hljs-keyword">while</span> (*p) &#123;<br>        <span class="hljs-keyword">if</span> (!best_samplerate || <span class="hljs-built_in">abs</span>(<span class="hljs-number">44100</span> - *p) &lt; <span class="hljs-built_in">abs</span>(<span class="hljs-number">44100</span> - best_samplerate))<br>            best_samplerate = *p;<br>        p++;<br>    &#125;<br>    <span class="hljs-keyword">return</span> best_samplerate;<br>&#125;<br><br><span class="hljs-comment">/* select layout with the highest channel count */</span><br><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">select_channel_layout</span><span class="hljs-params">(<span class="hljs-type">const</span> AVCodec *codec)</span><br>&#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">uint64_t</span> *p;<br>    <span class="hljs-type">uint64_t</span> best_ch_layout = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">int</span> best_nb_channels   = <span class="hljs-number">0</span>;<br>    <span class="hljs-comment">//channel_layouts: array of support channel layouts, or NULL if unknown. array is terminated by 0</span><br>    <span class="hljs-comment">//channel_layouts 保存了支持的所有声道布局数组，为空，或者以 0 结尾</span><br>    <span class="hljs-keyword">if</span> (!codec-&gt;channel_layouts)<br>        <span class="hljs-comment">//为空，返回AV_CH_LAYOUT_STEREO</span><br>        <span class="hljs-keyword">return</span> AV_CH_LAYOUT_STEREO;<br><br>    <span class="hljs-comment">//找声道数最多的那个</span><br>    p = codec-&gt;channel_layouts;<br>    <span class="hljs-keyword">while</span> (*p) &#123;<br>        <span class="hljs-type">int</span> nb_channels = av_get_channel_layout_nb_channels(*p);<br><br>        <span class="hljs-keyword">if</span> (nb_channels &gt; best_nb_channels) &#123;<br>            best_ch_layout    = *p;<br>            best_nb_channels = nb_channels;<br>        &#125;<br>        p++;<br>    &#125;<br>    <span class="hljs-keyword">return</span> best_ch_layout;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="encode"><a href="#encode" class="headerlink" title="encode"></a>encode</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">encode</span><span class="hljs-params">(AVCodecContext *ctx, AVFrame *frame, AVPacket *pkt,</span><br><span class="hljs-params">                   FILE *output)</span><br>&#123;<br>    <span class="hljs-type">int</span> ret;<br><br>    <span class="hljs-comment">/* 给编码器发送frame */</span><br>    ret = avcodec_send_frame(ctx, frame);<br>    <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Error sending the frame to the encoder\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-comment">/* read all the available output packets (in general there may be any</span><br><span class="hljs-comment">     * number of them */</span><br>    <span class="hljs-keyword">while</span> (ret &gt;= <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-comment">//从编码器中读pkt，pkt里面保存了编码后的数据</span><br>        ret = avcodec_receive_packet(ctx, pkt);<br>        <span class="hljs-keyword">if</span> (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)<br>            <span class="hljs-comment">//EAGAIN编码器还需要更多的frame才能继续输出pkt</span><br>            <span class="hljs-comment">//AVERROR_EOF编码器没有更多数据可以读取了，例如被冲洗了</span><br>            <span class="hljs-keyword">return</span>;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Error encoding audio frame\n&quot;</span>);<br>            <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>        &#125;<br>        <span class="hljs-comment">//写入文件</span><br>        fwrite(pkt-&gt;data, <span class="hljs-number">1</span>, pkt-&gt;size, output);<br>        <span class="hljs-comment">//取消引用pkt</span><br>        av_packet_unref(pkt);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="备注"><a href="#备注" class="headerlink" title="备注"></a>备注</h2><h3 id="ffmpeg-支持的音频编码器"><a href="#ffmpeg-支持的音频编码器" class="headerlink" title="ffmpeg 支持的音频编码器"></a>ffmpeg 支持的音频编码器</h3><figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs less"><span class="hljs-selector-tag">ffmpeg</span> <span class="hljs-selector-tag">-codecs</span> | <span class="hljs-selector-tag">grep</span> <span class="hljs-selector-tag">encoder</span> | <span class="hljs-selector-tag">grep</span> <span class="hljs-selector-tag">-i</span> <span class="hljs-selector-tag">audio</span><br> <span class="hljs-selector-tag">DEAIL</span>. <span class="hljs-selector-tag">aac</span>                  <span class="hljs-selector-tag">AAC</span> (Advanced Audio Coding) (<span class="hljs-attribute">decoders</span>: aac aac_fixed aac_at ) (<span class="hljs-attribute">encoders</span>: aac aac_at )<br> <span class="hljs-selector-tag">DEAI</span><span class="hljs-selector-class">.S</span> <span class="hljs-selector-tag">alac</span>                 <span class="hljs-selector-tag">ALAC</span> (Apple Lossless Audio Codec) (<span class="hljs-attribute">decoders</span>: alac alac_at ) (<span class="hljs-attribute">encoders</span>: alac alac_at )<br> <span class="hljs-selector-tag">DEAIL</span>. <span class="hljs-selector-tag">mp2</span>                  <span class="hljs-selector-tag">MP2</span> (MPEG audio layer <span class="hljs-number">2</span>) (<span class="hljs-attribute">decoders</span>: mp2 mp2float mp2_at ) (<span class="hljs-attribute">encoders</span>: mp2 mp2fixed )<br> <span class="hljs-selector-tag">DEAIL</span>. <span class="hljs-selector-tag">mp3</span>                  <span class="hljs-selector-tag">MP3</span> (MPEG audio layer <span class="hljs-number">3</span>) (<span class="hljs-attribute">decoders</span>: mp3float mp3 mp3_at ) (<span class="hljs-attribute">encoders</span>: libmp3lame )<br> <span class="hljs-selector-tag">DEAIL</span>. <span class="hljs-selector-tag">opus</span>                 <span class="hljs-selector-tag">Opus</span> (Opus Interactive Audio Codec) (<span class="hljs-attribute">decoders</span>: opus libopus ) (<span class="hljs-attribute">encoders</span>: opus libopus )<br> <span class="hljs-selector-tag">DEAIL</span>. <span class="hljs-selector-tag">ra_144</span>               <span class="hljs-selector-tag">RealAudio</span> <span class="hljs-number">1.0</span> (<span class="hljs-number">14.4</span>K) (<span class="hljs-attribute">decoders</span>: real_144 ) (<span class="hljs-attribute">encoders</span>: real_144 )<br></code></pre></td></tr></table></figure>
+
+<p>示例中选择的是AV_CODEC_ID_MP2</p>
+<p>通过avcodec_find_encoder(AV_CODEC_ID_MP2)来找到对应的编码器</p>
+<p>你也可以尝试mp3，aac ，opus 之类的。</p>
+<h3 id="采样格式，分平面型和非平面型"><a href="#采样格式，分平面型和非平面型" class="headerlink" title="采样格式，分平面型和非平面型"></a>采样格式，分平面型和非平面型</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs objectivec"><span class="hljs-keyword">enum</span> <span class="hljs-built_in">AVSampleFormat</span> &#123;<br>    <span class="hljs-built_in">AV_SAMPLE_FMT_NONE</span> = <span class="hljs-number">-1</span>,<br>    <span class="hljs-built_in">AV_SAMPLE_FMT_U8</span>,          <span class="hljs-comment">///&lt; unsigned 8 bits</span><br>    <span class="hljs-built_in">AV_SAMPLE_FMT_S16</span>,         <span class="hljs-comment">///&lt; signed 16 bits</span><br>    <span class="hljs-built_in">AV_SAMPLE_FMT_S32</span>,         <span class="hljs-comment">///&lt; signed 32 bits</span><br>    <span class="hljs-built_in">AV_SAMPLE_FMT_FLT</span>,         <span class="hljs-comment">///&lt; float</span><br>    <span class="hljs-built_in">AV_SAMPLE_FMT_DBL</span>,         <span class="hljs-comment">///&lt; double</span><br><br>    <span class="hljs-built_in">AV_SAMPLE_FMT_U8P</span>,         <span class="hljs-comment">///&lt; unsigned 8 bits, planar</span><br>    <span class="hljs-built_in">AV_SAMPLE_FMT_S16P</span>,        <span class="hljs-comment">///&lt; signed 16 bits, planar</span><br>    <span class="hljs-built_in">AV_SAMPLE_FMT_S32P</span>,        <span class="hljs-comment">///&lt; signed 32 bits, planar</span><br>    <span class="hljs-built_in">AV_SAMPLE_FMT_FLTP</span>,        <span class="hljs-comment">///&lt; float, planar</span><br>    <span class="hljs-built_in">AV_SAMPLE_FMT_DBLP</span>,        <span class="hljs-comment">///&lt; double, planar</span><br>    <span class="hljs-built_in">AV_SAMPLE_FMT_S64</span>,         <span class="hljs-comment">///&lt; signed 64 bits</span><br>    <span class="hljs-built_in">AV_SAMPLE_FMT_S64P</span>,        <span class="hljs-comment">///&lt; signed 64 bits, planar</span><br><br>    <span class="hljs-built_in">AV_SAMPLE_FMT_NB</span>           <span class="hljs-comment">///&lt; Number of sample formats. DO NOT USE if linking dynamically</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>后缀带P的就是平面型的，不带P的就是交错型的。</p>
+<p>参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/lyy901135/article/details/103061967">音频格式解析：交错模式 vs Plane模式_lyy901135的博客-CSDN博客_plane模式</a></p>
+<h3 id="时间戳"><a href="#时间戳" class="headerlink" title="时间戳"></a>时间戳</h3><p>在h264视频编码的时候，有打时间戳，音频编码没有看到打时间戳的环节，之后再探究。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ffmpeg/" class="print-no-link">#ffmpeg</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>ffmpeg example 3.音频编码</div>
+      <div>https://yxibng.github.io/2022/03/12/ffmpeg/2022-03-12-ffmpeg example 学习 3/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>yxibng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年3月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/03/13/ffmpeg/2022-03-14-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%205/" title="ffmpeg example 5.硬件解码">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">ffmpeg example 5.硬件解码</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/03/11/ffmpeg/2022-03-11-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%202/" title="ffmpeg example 2.视频编码">
+                        <span class="hidden-mobile">ffmpeg example 2.视频编码</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
