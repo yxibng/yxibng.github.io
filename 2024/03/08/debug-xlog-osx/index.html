@@ -16,24 +16,25 @@
   <meta name="author" content="yxibng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="测试代码如下： 1234567891011121314151617181920212223#include &lt;iostream&gt;union Test &#123;    unsigned char ch;    struct &#123;        uint8_t a: 1;        uint8_t b: 3;        uint8_t c: 2;        uint">
+    <meta name="description" content="Tencent&#x2F;masr xlog macOS 源码调试get include folder1234567cd marspython build_osx.pyEnter menu:1. Clean &amp;&amp; build.2. Gen OSX Project.3. Build xlog.4. Exit  选择1，生成 mars.framework, 我们主要是使用头文件目录。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="结构体位域中的高低位问题">
-<meta property="og:url" content="https://yxibng.github.io/2023/06/09/c++/2023-06-09-%E4%BD%8D%E5%9F%9F%20%E9%AB%98%E4%BD%8E%E4%BD%8D/index.html">
+<meta property="og:title" content="Xcode 源码调试微信 xlog">
+<meta property="og:url" content="https://yxibng.github.io/2024/03/08/debug-xlog-osx/index.html">
 <meta property="og:site_name" content="yxibng">
-<meta property="og:description" content="测试代码如下： 1234567891011121314151617181920212223#include &lt;iostream&gt;union Test &#123;    unsigned char ch;    struct &#123;        uint8_t a: 1;        uint8_t b: 3;        uint8_t c: 2;        uint">
+<meta property="og:description" content="Tencent&#x2F;masr xlog macOS 源码调试get include folder1234567cd marspython build_osx.pyEnter menu:1. Clean &amp;&amp; build.2. Gen OSX Project.3. Build xlog.4. Exit  选择1，生成 mars.framework, 我们主要是使用头文件目录。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16863024030361686302402947.png">
-<meta property="article:published_time" content="2023-06-08T16:00:00.000Z">
-<meta property="article:modified_time" content="2024-03-06T11:53:13.564Z">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/17098674388361709867437953.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/17098675228351709867522443.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/17098675948351709867593931.png">
+<meta property="article:published_time" content="2024-03-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-08T03:26:29.893Z">
 <meta property="article:author" content="yxibng">
-<meta property="article:tag" content="c++">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16863024030361686302402947.png">
+<meta name="twitter:image" content="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/17098674388361709867437953.png">
   
   
   
-  <title>结构体位域中的高低位问题 - yxibng</title>
+  <title>Xcode 源码调试微信 xlog - yxibng</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -199,7 +200,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="结构体位域中的高低位问题"></span>
+            <span id="subtitle" data-typed-text="Xcode 源码调试微信 xlog"></span>
           
         </div>
 
@@ -210,8 +211,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2023-06-09 00:00" pubdate>
-          2023年6月9日 凌晨
+        <time datetime="2024-03-08 00:00" pubdate>
+          2024年3月8日 凌晨
         </time>
       </span>
     
@@ -222,7 +223,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          107 字
+          311 字
         
       </span>
     
@@ -233,7 +234,7 @@
         
         
         
-          1 分钟
+          3 分钟
         
       </span>
     
@@ -270,17 +271,35 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">结构体位域中的高低位问题</h1>
+            <h1 id="seo-header">Xcode 源码调试微信 xlog</h1>
             
             
               <div class="markdown-body">
                 
-                <p>测试代码如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-keyword">union</span> <span class="hljs-title class_">Test</span> &#123;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> ch;<br>    <span class="hljs-keyword">struct</span> &#123;<br>        <span class="hljs-type">uint8_t</span> a: <span class="hljs-number">1</span>;<br>        <span class="hljs-type">uint8_t</span> b: <span class="hljs-number">3</span>;<br>        <span class="hljs-type">uint8_t</span> c: <span class="hljs-number">2</span>;<br>        <span class="hljs-type">uint8_t</span> d: <span class="hljs-number">2</span>;<br>    &#125;;<br><br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">const</span> <span class="hljs-type">char</span> * argv[])</span> </span>&#123;<br>    Test test;<br>    test.a = <span class="hljs-number">1</span>;<br>    test.b = <span class="hljs-number">0</span>;<br>    test.c = <span class="hljs-number">0</span>;<br>    test.d = <span class="hljs-number">0b11</span>;<br><br>    std::cout &lt;&lt; test.ch &lt;&lt; std::endl;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+                <h1 id="Tencent-masr-xlog-macOS-源码调试"><a href="#Tencent-masr-xlog-macOS-源码调试" class="headerlink" title="Tencent&#x2F;masr xlog macOS 源码调试"></a>Tencent&#x2F;masr xlog macOS 源码调试</h1><h2 id="get-include-folder"><a href="#get-include-folder" class="headerlink" title="get include folder"></a>get include folder</h2><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs vim"><span class="hljs-keyword">cd</span> mars<br><span class="hljs-keyword">python</span> build_osx.<span class="hljs-keyword">py</span><br>Enter <span class="hljs-keyword">menu</span>:<br><span class="hljs-number">1</span>. Clean &amp;&amp; build.<br><span class="hljs-number">2</span>. Gen OSX Project.<br><span class="hljs-number">3</span>. Build xlog.<br><span class="hljs-number">4</span>. Exit<br></code></pre></td></tr></table></figure>
 
-<p>在 macOS 上断点查看内存如下</p>
-<p><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16863024030361686302402947.png" srcset="/img/loading.gif" lazyload></p>
-<h1 id="结论："><a href="#结论：" class="headerlink" title="结论："></a>结论：</h1><p>可以看到，定义在前的位域，在字节的低位。<br>位域在内存中存储的顺序刚好与定义的先后相反。</p>
+<p>选择1，生成 <code>mars.framework</code>, 我们主要是使用头文件目录。</p>
+<h2 id="gen-osx-project"><a href="#gen-osx-project" class="headerlink" title="gen osx project"></a>gen osx project</h2><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs vim"><span class="hljs-keyword">cd</span> mars<br><span class="hljs-keyword">python</span> build_osx.<span class="hljs-keyword">py</span><br>Enter <span class="hljs-keyword">menu</span>:<br><span class="hljs-number">1</span>. Clean &amp;&amp; build.<br><span class="hljs-number">2</span>. Gen OSX Project.<br><span class="hljs-number">3</span>. Build xlog.<br><span class="hljs-number">4</span>. Exit<br># <span class="hljs-built_in">input</span> <span class="hljs-number">2</span><br></code></pre></td></tr></table></figure>
+
+<p>执行结果</p>
+<figure class="highlight ada"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs ada"><span class="hljs-comment">-- ==============config mars====================</span><br><span class="hljs-comment">-- Configuring done (6.6s)</span><br><span class="hljs-comment">-- Generating done (0.0s)</span><br><span class="hljs-comment">-- Build files have been written to: /Users/yxibng/Github/mars/mars/cmake_build/OSX</span><br></code></pre></td></tr></table></figure>
+
+<p>在 mars&#x2F;cmake_build&#x2F;OSX 目录中找到 mars.xcodeproj</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs stata"><span class="hljs-keyword">cd</span> mars/cmake_build/OSX <br><br><span class="hljs-keyword">ls</span><br>CMakeCache.txt       baseevent            comm                 sdt<br>CMakeFiles           boost                <span class="hljs-keyword">include</span>              stn<br>CMakeScripts         <span class="hljs-keyword">boot</span>                 install_manifest.txt xlog<br>Darwin.<span class="hljs-keyword">out</span>           build                lib                  zstd<br><span class="hljs-keyword">app</span>                  cmake_install.cmake  mars.xcodeproj<br></code></pre></td></tr></table></figure>
+
+<h2 id="将-mars-xcodeproj-作为子工程，添加为依赖项"><a href="#将-mars-xcodeproj-作为子工程，添加为依赖项" class="headerlink" title="将 mars.xcodeproj 作为子工程，添加为依赖项"></a>将 mars.xcodeproj 作为子工程，添加为依赖项</h2><p>通过 cmake 生成的 project 定义了生成 mars.framework 的几个相关target， 将 mars.xcodeproj 设置为子工程，<br>主工程依赖 mars.xcodeproj 定义的target，即可实现 xlog 的源码调试。</p>
+<ol>
+<li>create new macOS project: xlog-test, selcte language: Objective-C</li>
+<li>mars.xcodeproj 添加到 xlog-test 工程中</li>
+<li>将 mars.framework&#x2F;Headers 拷贝到 xlog-test 根目录</li>
+<li>xlog-test 配置 header search paths， 值为 <code>$(SRCROOT)/Headers</code><br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/17098674388361709867437953.png" srcset="/img/loading.gif" lazyload alt="17098674388361709867437953.png"></li>
+<li>xlog-test 配置 linked libraries<br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/17098675228351709867522443.png" srcset="/img/loading.gif" lazyload alt="17098675228351709867522443.png"></li>
+<li>添加辅助代码，从 MacDemo 中获取， 拷贝到 xlog-test 工程中<br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/17098675948351709867593931.png" srcset="/img/loading.gif" lazyload alt="17098675948351709867593931.png"></li>
+<li>LogHelper 中添加 setup 方法，用于初始化 xlog<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs arduino">+ (<span class="hljs-type">void</span>)setup &#123;<br>    NSArray *paths = <span class="hljs-built_in">NSSearchPathForDirectoriesInDomains</span>(NSLibraryDirectory, NSUserDomainMask, YES);<br>    NSString *libraryDirectory = [paths firstObject];<br>    <br>    <span class="hljs-comment">// init xlog</span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> DEBUG</span><br>    <span class="hljs-built_in">xlogger_SetLevel</span>(kLevelDebug);<br>    mars::xlog::<span class="hljs-built_in">appender_set_console_log</span>(<span class="hljs-literal">true</span>);<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>    <span class="hljs-built_in">xlogger_SetLevel</span>(kLevelInfo);<br>    <span class="hljs-built_in">appender_set_console_log</span>(<span class="hljs-literal">false</span>);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>    mars::xlog::XLogConfig config;<br>    config.mode_ = mars::xlog::kAppenderAsync;<br>    config.logdir_ = [[libraryDirectory stringByAppendingString:@<span class="hljs-string">&quot;/log/&quot;</span>] UTF8String];<br>    config.nameprefix_ = <span class="hljs-string">&quot;Test&quot;</span>;<br>    config.pub_key_ = <span class="hljs-string">&quot;&quot;</span>;<br>    config.compress_mode_ = mars::xlog::kZlib;<br>    config.compress_level_ = <span class="hljs-number">0</span>;<br>    config.cachedir_ = <span class="hljs-string">&quot;&quot;</span>;<br>    config.cache_days_ = <span class="hljs-number">0</span>;<br>    <span class="hljs-built_in">appender_open</span>(config);<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li>AppDelegate初始化调用<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs angelscript">- (<span class="hljs-built_in">void</span>)applicationDidFinishLaunching:(NSNotification *)aNotification &#123;<br>    <span class="hljs-comment">// Insert code here to initialize your application</span><br><span class="hljs-string">    [LogHelper setup]</span>;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li>用<code>LogUtil.h</code>中宏定义打log<figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs gcode">LOG_ERROR<span class="hljs-comment">(kModuleViewController, @&quot;this is a test log!&quot;)</span>;<br></code></pre></td></tr></table></figure></li>
+<li>愉快地断点，调试吧</li>
+</ol>
 
                 
               </div>
@@ -290,13 +309,6 @@
               <div class="post-metas my-3">
   
   
-    <div class="post-meta">
-      <i class="iconfont icon-tags"></i>
-      
-        <a href="/tags/c/" class="print-no-link">#c++</a>
-      
-    </div>
-  
 </div>
 
 
@@ -305,8 +317,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>结构体位域中的高低位问题</div>
-      <div>https://yxibng.github.io/2023/06/09/c++/2023-06-09-位域 高低位/</div>
+      <div>Xcode 源码调试微信 xlog</div>
+      <div>https://yxibng.github.io/2024/03/08/debug-xlog-osx/</div>
     </div>
     <div class="license-meta">
       
@@ -318,7 +330,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2023年6月9日</div>
+          <div>2024年3月8日</div>
         </div>
       
       
@@ -350,18 +362,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/03/08/debug-xlog-osx/" title="Xcode 源码调试微信 xlog">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Xcode 源码调试微信 xlog</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2023/05/23/lldb/2023-05-23-GDB%20Examining%20Memory/" title="GDB Examining Memory">
-                        <span class="hidden-mobile">GDB Examining Memory</span>
+                      <a href="/2023/06/09/c++/2023-06-09-%E4%BD%8D%E5%9F%9F%20%E9%AB%98%E4%BD%8E%E4%BD%8D/" title="结构体位域中的高低位问题">
+                        <span class="hidden-mobile">结构体位域中的高低位问题</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
