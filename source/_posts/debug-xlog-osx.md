@@ -97,11 +97,15 @@ app                  cmake_install.cmake  mars.xcodeproj
     appender_open(config);
 }
 ```
-8. AppDelegate初始化调用
+8. `main.m` 中初始化调用
 ```
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
-    // Insert code here to initialize your application
-    [LogHelper setup];
+#import <Cocoa/Cocoa.h>
+#import "LogHelper.h"
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        [LogHelper setup];
+    }
+    return NSApplicationMain(argc, argv);
 }
 ```
 9. 用`LogUtil.h`中宏定义打log
