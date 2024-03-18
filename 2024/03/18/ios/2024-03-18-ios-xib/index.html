@@ -16,36 +16,22 @@
   <meta name="author" content="yxibng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="ffmpeg 源码 https:&#x2F;&#x2F;github.com&#x2F;FFmpeg&#x2F;FFmpeg.git ffmpeg 配置, 使其支持调试12.&#x2F;configure  --disable-optimizations --disable-stripping --enable-debug&#x3D;3 --disable-docmake -j &#96;nproc&#96;    以_g结尾的就是可以调试的程序ffmpeg_g, ffp">
+    <meta name="description" content="Apple M1 arm64 - IBDesignable error: “incompatible architecture” (have ‘x86_64’, need ‘arm64’)1Failed to render and update auto layout status for ViewController (BYZ-38-t0r): dlopen(ICONButton.app, 0x">
 <meta property="og:type" content="article">
-<meta property="og:title" content="使用Xcode调试ffmpeg">
-<meta property="og:url" content="https://yxibng.github.io/2022/03/09/ffmpeg/2022-03-09-%E4%BD%BF%E7%94%A8Xcode%E8%B0%83%E8%AF%95ffmpeg/index.html">
+<meta property="og:title" content="ios xib 总结">
+<meta property="og:url" content="https://yxibng.github.io/2024/03/18/ios/2024-03-18-ios-xib/index.html">
 <meta property="og:site_name" content="yxibng">
-<meta property="og:description" content="ffmpeg 源码 https:&#x2F;&#x2F;github.com&#x2F;FFmpeg&#x2F;FFmpeg.git ffmpeg 配置, 使其支持调试12.&#x2F;configure  --disable-optimizations --disable-stripping --enable-debug&#x3D;3 --disable-docmake -j &#96;nproc&#96;    以_g结尾的就是可以调试的程序ffmpeg_g, ffp">
+<meta property="og:description" content="Apple M1 arm64 - IBDesignable error: “incompatible architecture” (have ‘x86_64’, need ‘arm64’)1Failed to render and update auto layout status for ViewController (BYZ-38-t0r): dlopen(ICONButton.app, 0x">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/1646798696028ceaddb1d1dd2473496faad4c1883ba1d.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468770121471646877011522.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468770571461646877056550.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468356217741646835620857.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468772051421646877204301.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468780312171646878030941.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468360299171646836029894.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468360897771646836089376.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468361877781646836187409.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468363477791646836347004.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468366427811646836642007.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468367127821646836712289.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468370517811646837051618.png">
-<meta property="article:published_time" content="2022-03-08T16:00:00.000Z">
-<meta property="article:modified_time" content="2024-03-06T11:53:13.565Z">
+<meta property="article:published_time" content="2024-03-17T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-18T07:12:38.794Z">
 <meta property="article:author" content="yxibng">
-<meta property="article:tag" content="ffmpeg">
+<meta property="article:tag" content="iOS">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/1646798696028ceaddb1d1dd2473496faad4c1883ba1d.png">
   
   
   
-  <title>使用Xcode调试ffmpeg - yxibng</title>
+  <title>ios xib 总结 - yxibng</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -211,7 +197,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="使用Xcode调试ffmpeg"></span>
+            <span id="subtitle" data-typed-text="ios xib 总结"></span>
           
         </div>
 
@@ -222,8 +208,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-03-09 00:00" pubdate>
-          2022年3月9日 凌晨
+        <time datetime="2024-03-18 00:00" pubdate>
+          2024年3月18日 凌晨
         </time>
       </span>
     
@@ -234,7 +220,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          183 字
+          141 字
         
       </span>
     
@@ -282,41 +268,24 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">使用Xcode调试ffmpeg</h1>
+            <h1 id="seo-header">ios xib 总结</h1>
             
             
               <div class="markdown-body">
                 
-                <p>ffmpeg 源码 <a target="_blank" rel="noopener" href="https://github.com/FFmpeg/FFmpeg.git">https://github.com/FFmpeg/FFmpeg.git</a></p>
-<h2 id="ffmpeg-配置-使其支持调试"><a href="#ffmpeg-配置-使其支持调试" class="headerlink" title="ffmpeg 配置, 使其支持调试"></a>ffmpeg 配置, 使其支持调试</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">./configure  --disable-optimizations --disable-stripping --enable-debug=3 --disable-doc<br>make -j `<span class="hljs-built_in">nproc</span>`<br></code></pre></td></tr></table></figure>
+                <h1 id="Apple-M1-arm64-IBDesignable-error-“incompatible-architecture”-have-‘x86-64’-need-‘arm64’"><a href="#Apple-M1-arm64-IBDesignable-error-“incompatible-architecture”-have-‘x86-64’-need-‘arm64’" class="headerlink" title="Apple M1 arm64 - IBDesignable error: “incompatible architecture” (have ‘x86_64’, need ‘arm64’)"></a>Apple M1 arm64 - IBDesignable error: “incompatible architecture” (have ‘x86_64’, need ‘arm64’)</h1><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs vim">Failed <span class="hljs-keyword">to</span> render <span class="hljs-built_in">and</span> <span class="hljs-keyword">update</span> auto layout status <span class="hljs-keyword">for</span> ViewController (BYZ-<span class="hljs-number">38</span>-t0r): dlopen(ICONButton.app, <span class="hljs-number">0</span>x0001): tried: <span class="hljs-string">&#x27;/ICONButton&#x27;</span> (<span class="hljs-keyword">no</span> such <span class="hljs-keyword">file</span>), <span class="hljs-string">&#x27;/Library/Developer/CoreSimulator/Volumes/iOS_21E213/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 17.4.simruntime/Contents/Resources/RuntimeRootICONButton.app&#x27;</span> (<span class="hljs-keyword">no</span> such <span class="hljs-keyword">file</span>), <span class="hljs-string">&#x27;ICONButton.app&#x27;</span> (mach-<span class="hljs-keyword">o</span> <span class="hljs-keyword">file</span>, but <span class="hljs-keyword">is</span> <span class="hljs-keyword">an</span> incompatible architecture (have <span class="hljs-string">&#x27;x86_64&#x27;</span>, need <span class="hljs-string">&#x27;arm64&#x27;</span>))<br></code></pre></td></tr></table></figure>
 
-<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/1646798696028ceaddb1d1dd2473496faad4c1883ba1d.png" srcset="/img/loading.gif" lazyload alt="image20210422182014703png"> </p>
-<p>以<code>_g</code>结尾的就是可以调试的程序<code>ffmpeg_g, ffplay_g, ffprobe_g</code></p>
-<h2 id="Xcode-配置"><a href="#Xcode-配置" class="headerlink" title="Xcode 配置"></a>Xcode 配置</h2><p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468770121471646877011522.png" srcset="/img/loading.gif" lazyload></p>
-<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468770571461646877056550.png" srcset="/img/loading.gif" lazyload></p>
-<p>把 ffmpeg 目录拖进工程，等待添加完成，可能时间较久</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468356217741646835620857.png" srcset="/img/loading.gif" lazyload></p>
-<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468772051421646877204301.png" srcset="/img/loading.gif" lazyload>等待加载完毕</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468780312171646878030941.png" srcset="/img/loading.gif" lazyload></p>
-<p>添加target， 比如说调试<code>ffplay_g</code></p>
-<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468360299171646836029894.png" srcset="/img/loading.gif" lazyload></p>
-<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468360897771646836089376.png" srcset="/img/loading.gif" lazyload></p>
-<p>修改对应的路径</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468361877781646836187409.png" srcset="/img/loading.gif" lazyload></p>
-<p>修改scheme，选择<code>ffplay_g</code>为可执行目标</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468363477791646836347004.png" srcset="/img/loading.gif" lazyload></p>
-<p>给<code>ffplay_g</code>传递参数</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468366427811646836642007.png" srcset="/img/loading.gif" lazyload></p>
-<p>开始打断点调试吧</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468367127821646836712289.png" srcset="/img/loading.gif" lazyload></p>
-<h2 id="调试-ffmpeg官方的示例程序，示例位于ffmpeg-doc-examples路径下面"><a href="#调试-ffmpeg官方的示例程序，示例位于ffmpeg-doc-examples路径下面" class="headerlink" title="调试 ffmpeg官方的示例程序，示例位于ffmpeg/doc/examples路径下面"></a>调试 ffmpeg官方的示例程序，示例位于<code>ffmpeg/doc/examples</code>路径下面</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">cd ffmpeg<br>make examples<br></code></pre></td></tr></table></figure>
 
-<p>后缀带<code>_g</code>的都是可以调试的</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16468370517811646837051618.png" srcset="/img/loading.gif" lazyload></p>
-<p>与调试ffplay_g一样，添加target，配置路径，配置可执行目标，添加参数，愉快地调试吧！</p>
-<hr>
-<p>参考： <a target="_blank" rel="noopener" href="https://www.jianshu.com/p/27a90b113413">Xcode调试ffmpeg源码(十五) - 简书</a></p>
-
+<p>解决办法， 参考： <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/65285424/xcode-12-apple-m1-arm64-designable-error-wrong-architecture">Xcode 12 Apple M1 arm64 - Designable error: “wrong architecture”</a></p>
+<p>This is how I solved it:</p>
+<ol>
+<li>Set the target architecture to arm64</li>
+<li>Set the target exclude architecture x86_64</li>
+<li>Clean build folder (Product -&gt; Clean build folder)</li>
+<li>Restart XCode</li>
+</ol>
+<h1 id="Easy-XIB-and-Storyboard-Localization"><a href="#Easy-XIB-and-Storyboard-Localization" class="headerlink" title="Easy XIB and Storyboard Localization"></a>Easy XIB and Storyboard Localization</h1><p>参考： <a target="_blank" rel="noopener" href="https://medium.com/@mario.negro.martin/easy-xib-and-storyboard-localization-b2794c69c9db">Easy XIB and Storyboard Localization</a></p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs dart">protocol Localizable &#123;<br>    <span class="hljs-keyword">var</span> localized: <span class="hljs-built_in">String</span> &#123; <span class="hljs-keyword">get</span> &#125;<br>&#125;<br><span class="hljs-keyword">extension</span> <span class="hljs-built_in">String</span>: Localizable &#123;<br>    <span class="hljs-keyword">var</span> localized: <span class="hljs-built_in">String</span> &#123;<br>        <span class="hljs-keyword">return</span> NSLocalizedString(self, comment: <span class="hljs-string">&quot;&quot;</span>)<br>    &#125;<br>&#125;<br>protocol XIBLocalizable &#123;<br>    <span class="hljs-keyword">var</span> xibLocKey: <span class="hljs-built_in">String?</span> &#123; <span class="hljs-keyword">get</span> <span class="hljs-keyword">set</span> &#125;<br>&#125;<br><span class="hljs-keyword">extension</span> UILabel: XIBLocalizable &#123;<br>    <span class="hljs-meta">@IBInspectable</span> <span class="hljs-keyword">var</span> xibLocKey: <span class="hljs-built_in">String?</span> &#123;<br>        <span class="hljs-keyword">get</span> &#123; <span class="hljs-keyword">return</span> nil &#125;<br>        <span class="hljs-keyword">set</span>(key) &#123;<br>            text = key?.localized<br>        &#125;<br>    &#125;<br>&#125;<br><span class="hljs-keyword">extension</span> UIButton: XIBLocalizable &#123;<br>    <span class="hljs-meta">@IBInspectable</span> <span class="hljs-keyword">var</span> xibLocKey: <span class="hljs-built_in">String?</span> &#123;<br>        <span class="hljs-keyword">get</span> &#123; <span class="hljs-keyword">return</span> nil &#125;<br>        <span class="hljs-keyword">set</span>(key) &#123;<br>            setTitle(key?.localized, <span class="hljs-keyword">for</span>: .normal)<br>        &#125;<br>   &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
                 
               </div>
             
@@ -328,7 +297,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/ffmpeg/" class="print-no-link">#ffmpeg</a>
+        <a href="/tags/iOS/" class="print-no-link">#iOS</a>
       
     </div>
   
@@ -340,8 +309,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>使用Xcode调试ffmpeg</div>
-      <div>https://yxibng.github.io/2022/03/09/ffmpeg/2022-03-09-使用Xcode调试ffmpeg/</div>
+      <div>ios xib 总结</div>
+      <div>https://yxibng.github.io/2024/03/18/ios/2024-03-18-ios-xib/</div>
     </div>
     <div class="license-meta">
       
@@ -353,7 +322,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年3月9日</div>
+          <div>2024年3月18日</div>
         </div>
       
       
@@ -385,18 +354,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/03/09/ffmpeg/2022-03-09-%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8vscode%E5%9C%A8macOS%E5%B9%B3%E5%8F%B0%E8%B0%83%E8%AF%95ffmpeg/" title="如何使用vscode在macOS平台调试ffmpeg">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">如何使用vscode在macOS平台调试ffmpeg</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/02/25/Shell/2022-02-25-Shell%20%E5%8F%98%E9%87%8F/" title="Shell 变量">
-                        <span class="hidden-mobile">Shell 变量</span>
+                      <a href="/2024/03/08/debug-xlog-osx/" title="Xcode 源码调试微信 xlog">
+                        <span class="hidden-mobile">Xcode 源码调试微信 xlog</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
