@@ -54,9 +54,12 @@ mdfind .workflow
 ```
 clang-format -style=google -dump-config > .clang-format
 ```
-打开 Xcode， 选中需要格式化的代码并右键唤出菜单。选择 Services-> clang-format，这里 Services 中的名称即为前面步骤中保存的 Services 名称。
+打开 Xcode， 先选中需要格式化的代码，当然也可以`Cmd+A` 全选。选择 Services-> clang-format，这里 Services 中的名称即为前面步骤中保存的 Services 名称。
 
-![](https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16670146406641667014640354.png)
+![1776170338511trimmed.gif](https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/1776170338511trimmed.gif)
+
+或者, 选中要格式化的代码，使用右键-> Services -> Clang-format 来格式化。
+![17761707062701776170705793.png](https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/17761707062701776170705793.png)
 
 ### 添加快捷键
 
