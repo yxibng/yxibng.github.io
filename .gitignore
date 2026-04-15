@@ -5,3 +5,8 @@ _site/
 *.swp
 .Trashes
 .jekyll-cache
+
+# Hexo generated files
+public/
+db.json
+.deploy_git/
