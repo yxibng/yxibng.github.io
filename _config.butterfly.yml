@@ -1,0 +1,113 @@
+# ============================================================
+# Butterfly 主题配置
+# 文档: https://butterfly.js.org/
+# ============================================================
+
+# -----------------------------------------------
+# 头像
+# -----------------------------------------------
+avatar:
+  img: https://github.com/yxibng.png
+  effect: false
+
+# -----------------------------------------------
+# 导航栏
+# -----------------------------------------------
+nav:
+  display_title: true
+  fixed: false
+
+menu:
+  首页: / || fas fa-home
+  归档: /archives/ || fas fa-archive
+  标签: /tags/ || fas fa-tags
+  分类: /categories/ || fas fa-folder-open
+  关于: /about/ || fas fa-user
+
+# -----------------------------------------------
+# 首页 Banner & 打字机 slogan
+# -----------------------------------------------
+index_img: ''
+
+subtitle:
+  enable: true
+  effect: true
+  typed_option:
+    startDelay: 300
+    typeSpeed: 80
+    loop: true
+  source: 0
+  sub:
+    - 读书，学习，走遍世界
+
+# -----------------------------------------------
+# 关于页作者卡片
+# -----------------------------------------------
+social:
+  fab fa-github: https://github.com/yxibng || GitHub || "#24292e"
+
+# -----------------------------------------------
+# 页脚
+# -----------------------------------------------
+footer:
+  owner:
+    enable: true
+    since: 2022
+  custom_text: ''
+  copyright: false
+
+# -----------------------------------------------
+# 深色模式
+# -----------------------------------------------
+display_mode: light
+dark_mode:
+  enable: true
+  default: light
+
+# -----------------------------------------------
+# 代码块
+# -----------------------------------------------
+highlight_theme: light
+highlight_copy: true
+highlight_lang: true
+highlight_shrink: false
+code_word_wrap: false
+
+# -----------------------------------------------
+# 文章元信息
+# -----------------------------------------------
+post_meta:
+  page:
+    date_type: created
+    date_format: date
+    categories: true
+    tags: true
+    label: true
+  post:
+    date_type: created
+    date_format: date
+    categories: true
+    tags: true
+    label: true
+
+# -----------------------------------------------
+# 目录
+# -----------------------------------------------
+toc:
+  post: true
+  page: false
+  number: true
+  expand: true
+
+# -----------------------------------------------
+# 翻页
+# -----------------------------------------------
+post_pagination: 1
+
+# -----------------------------------------------
+# 404 页面
+# -----------------------------------------------
+error_404:
+  enable: true
+  subtitle: 页面不存在
+  img: ''
