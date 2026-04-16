@@ -5,6 +5,7 @@ _site/
 *.swp
 .Trashes
 .jekyll-cache
+node_modules/
 
 # Hexo generated files
 public/
