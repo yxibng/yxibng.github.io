@@ -1,0 +1,285 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>cmake Importing and Exporting Guide | yxibng</title><meta name="author" content="yxibng"><meta name="copyright" content="yxibng"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="参考：https:&#x2F;&#x2F;cmake.org&#x2F;cmake&#x2F;help&#x2F;latest&#x2F;guide&#x2F;importing-exporting&#x2F;index.html  ImportingIMPORTED targets 将cmake工程外部的库，可执行文件引入到当前的cmake工程中，被引入的内容会关联到一个cmake 中一个逻辑上的target。 创建方式，调用add_executable(),add_lib">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cmake Importing and Exporting Guide">
+<meta property="og:url" content="https://yxibng.github.io/2022/10/24/cmake/2022-10-24-cmake%20Importing%20and%20Exporting%20Guide/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:description" content="参考：https:&#x2F;&#x2F;cmake.org&#x2F;cmake&#x2F;help&#x2F;latest&#x2F;guide&#x2F;importing-exporting&#x2F;index.html  ImportingIMPORTED targets 将cmake工程外部的库，可执行文件引入到当前的cmake工程中，被引入的内容会关联到一个cmake 中一个逻辑上的target。 创建方式，调用add_executable(),add_lib">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/yxibng.png">
+<meta property="article:published_time" content="2022-10-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-16T14:24:32.735Z">
+<meta property="article:author" content="yxibng">
+<meta property="article:tag" content="cmake">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/yxibng.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "cmake Importing and Exporting Guide",
+  "url": "https://yxibng.github.io/2022/10/24/cmake/2022-10-24-cmake%20Importing%20and%20Exporting%20Guide/",
+  "image": "https://github.com/yxibng.png",
+  "datePublished": "2022-10-23T16:00:00.000Z",
+  "dateModified": "2026-04-16T14:24:32.735Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "yxibng",
+      "url": "https://yxibng.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yxibng.github.io/2022/10/24/cmake/2022-10-24-cmake%20Importing%20and%20Exporting%20Guide/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'cmake Importing and Exporting Guide',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">yxibng</span></a><a class="nav-page-title" href="/"><span class="site-name">cmake Importing and Exporting Guide</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">cmake Importing and Exporting Guide</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2022-10-23T16:00:00.000Z" title="发表于 2022-10-24 00:00:00">2022-10-24</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>参考：<a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/guide/importing-exporting/index.html">https://cmake.org/cmake/help/latest/guide/importing-exporting/index.html</a> </p>
+<h1 id="Importing"><a href="#Importing" class="headerlink" title="Importing"></a>Importing</h1><p>IMPORTED targets 将cmake工程外部的库，可执行文件引入到当前的cmake工程中，被引入的内容会关联到一个cmake 中一个<br>逻辑上的target。</p>
+<p>创建方式，调用<code>add_executable()</code>,<code>add_library()</code>命令创建target， 但是要添加<code>IMPORTED</code>参数。</p>
+<p>这个IMPORTED target不产生任何构建文件，因为他们引入的都是现成的库或者可执行文件。</p>
+<p>一旦IMPORTED target 被创建好了，就可以像工程中的其他target一样被引用了。 通过这种方式，就可以方便，灵活引用外部可执行文件和库了。</p>
+<h2 id="Importing-Executables"><a href="#Importing-Executables" class="headerlink" title="Importing Executables"></a>Importing Executables</h2><p>使用磁盘上的可执行文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">add_executable(myexe IMPORTED)</span><br><span class="line">set_property(TARGET myexe PROPERTY</span><br><span class="line">             IMPORTED_LOCATION &quot;../InstallMyExe/bin/myexe&quot;)</span><br><span class="line">add_custom_command(OUTPUT main.cc COMMAND myexe)</span><br><span class="line">add_executable(mynewexe main.cc)</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>创建一个IMPORTED target</li>
+<li>设置target相关属性，这里指定其关联的可执行文件路径</li>
+<li>添加了一个custom command， 用target myexe指定的可执行文件来生成文件<code>main.cc</code></li>
+<li>创建一个正常的可执行target, 使用上一步生成的<code>main.cc</code>作为源文件</li>
+</ol>
+<h2 id="Importing-Libraries"><a href="#Importing-Libraries" class="headerlink" title="Importing Libraries"></a>Importing Libraries</h2><p>导入已经构建好的库作为一个target来使用。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">add_library(foo STATIC IMPORTED)</span><br><span class="line">set_property(TARGET foo PROPERTY</span><br><span class="line">             IMPORTED_LOCATION &quot;/path/to/libfoo.a&quot;)</span><br><span class="line">add_executable(myexe src1.c src2.c)</span><br><span class="line">target_link_libraries(myexe PRIVATE foo)</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>创建一个IMPORTED target</li>
+<li>设置target相关属性，这里指定其关联的静态库路径</li>
+<li>创建一个正常的可执行target myexe，链接上面创建的target foo</li>
+</ol>
+<p>考虑到可能会有debug，release 等不同配置，引入具有不同配置的同一个库，可以使用下面的形式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">find_library(math_REL NAMES m)</span><br><span class="line">find_library(math_DBG NAMES md)</span><br><span class="line">add_library(math STATIC IMPORTED GLOBAL)</span><br><span class="line">set_target_properties(math PROPERTIES</span><br><span class="line">  IMPORTED_LOCATION &quot;$&#123;math_REL&#125;&quot;</span><br><span class="line">  IMPORTED_LOCATION_DEBUG &quot;$&#123;math_DBG&#125;&quot;</span><br><span class="line">  IMPORTED_CONFIGURATIONS &quot;RELEASE;DEBUG&quot;</span><br><span class="line">)</span><br><span class="line">add_executable(myexe src1.c src2.c)</span><br><span class="line">target_link_libraries(myexe PRIVATE math)</span><br></pre></td></tr></table></figure>
+<h1 id="Exporting-Targets"><a href="#Exporting-Targets" class="headerlink" title="Exporting Targets"></a>Exporting Targets</h1><blockquote>
+<p>While IMPORTED targets on their own are useful, they still require that the project that imports them knows the locations of the target files on disk. The real power of IMPORTED targets is when the project providing the target files also provides a CMake file to help import them. A project can be setup to produce the necessary information so that it can easily be used by other CMake projects be it from a build directory, a local install or when packaged.</p>
+</blockquote>
+<ol>
+<li>IMPORTED targets 要求使用这些target的工程，知道相关文件在磁盘上的位置。</li>
+<li>要想屏蔽这些细节，库的提供方，同时提供一个导入这个库的帮助文件 <code>xxxTargets.cmake</code></li>
+<li>要想生成的库，可以通过<code>find_package()</code>命令来索引使用的话，可以在cmake工程中配置，在构建工程的时候，同时生成对应的帮助文件<ul>
+<li><code>xxxTargets.cmake</code></li>
+<li><code>xxxConfig.cmake</code></li>
+<li><code>xxxConfigVersion.cmake</code></li>
+</ul>
+</li>
+</ol>
+<h2 id="xxxTargets-cmake"><a href="#xxxTargets-cmake" class="headerlink" title="xxxTargets.cmake"></a><code>xxxTargets.cmake</code></h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">cmake_minimum_required(VERSION 3.15)</span><br><span class="line">project(MathFunctions)</span><br><span class="line"></span><br><span class="line"># make cache variables for install destinations</span><br><span class="line">include(GNUInstallDirs)</span><br><span class="line"></span><br><span class="line"># specify the C++ standard</span><br><span class="line">set(CMAKE_CXX_STANDARD 11)</span><br><span class="line">set(CMAKE_CXX_STANDARD_REQUIRED True)</span><br><span class="line"></span><br><span class="line"># create library</span><br><span class="line">add_library(MathFunctions STATIC MathFunctions.cxx)</span><br><span class="line"></span><br><span class="line"># add include directories</span><br><span class="line">target_include_directories(MathFunctions</span><br><span class="line">                           PUBLIC</span><br><span class="line">                           &quot;$&lt;BUILD_INTERFACE:$&#123;CMAKE_CURRENT_SOURCE_DIR&#125;&gt;&quot;</span><br><span class="line">                           &quot;$&lt;INSTALL_INTERFACE:$&#123;CMAKE_INSTALL_INCLUDEDIR&#125;&gt;&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"># install the target and create export-set</span><br><span class="line">install(TARGETS MathFunctions</span><br><span class="line">        EXPORT MathFunctionsTargets</span><br><span class="line">        LIBRARY DESTINATION $&#123;CMAKE_INSTALL_LIBDIR&#125;</span><br><span class="line">        ARCHIVE DESTINATION $&#123;CMAKE_INSTALL_LIBDIR&#125;</span><br><span class="line">        RUNTIME DESTINATION $&#123;CMAKE_INSTALL_BINDIR&#125;</span><br><span class="line">        INCLUDES DESTINATION $&#123;CMAKE_INSTALL_INCLUDEDIR&#125;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"># install header file</span><br><span class="line">install(FILES MathFunctions.h DESTINATION $&#123;CMAKE_INSTALL_INCLUDEDIR&#125;)</span><br><span class="line"></span><br><span class="line"># generate and install export file</span><br><span class="line">install(EXPORT MathFunctionsTargets</span><br><span class="line">        FILE MathFunctionsTargets.cmake</span><br><span class="line">        NAMESPACE MathFunctions::</span><br><span class="line">        DESTINATION $&#123;CMAKE_INSTALL_LIBDIR&#125;/cmake/MathFunctions</span><br><span class="line">)</span><br><span class="line"># create IMPORTED target, set target property</span><br><span class="line">add_library(MathFunctions::MathFunctions STATIC IMPORTED)</span><br><span class="line">set_target_properties(MathFunctions::MathFunctions PROPERTIES</span><br><span class="line">  INTERFACE_INCLUDE_DIRECTORIES &quot;$&#123;_IMPORT_PREFIX&#125;/include&quot;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>创建一个正常的静态库</li>
+<li>设置静态库头文件搜索路径，分别指定构建时和安装后的路径</li>
+<li>创建一个install命令，指定生成二进制文件的安装路径。其中<code>EXPORT MathFunctionsTargets</code>,指定了导出target文件对应的文件名字是<code>MathFunctionsTargets.cmake</code></li>
+<li>指定头文件如何安装</li>
+<li>指定<code>MathFunctionsTargets.cmake</code>文件如何安装，<code>NAMESPACE MathFunctions::</code> 给导出的target添加前缀命名空间，一般带有命名空间的target，都是<code>IMPORTED target</code></li>
+<li>创建一个<code>IMPORTED target</code>,名字是<code>MathFunctions::MathFunctions</code></li>
+<li>设置<code>MathFunctions::MathFunctions</code>的属性，此处是头文件路径</li>
+</ol>
+<p>如何使用导出的target文件, 在<code>CMakeLists.txt</code>文件中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">include($&#123;INSTALL_PREFIX&#125;/lib/cmake/MathFunctionTargets.cmake)</span><br><span class="line">add_executable(myexe src1.c src2.c )</span><br><span class="line">target_link_libraries(myexe PRIVATE MathFunctions::MathFunctions)</span><br></pre></td></tr></table></figure>
+<ol>
+<li>首先包含<code>/MathFunctionTargets.cmake</code>文件</li>
+<li>创建一个可执行目标myexe</li>
+<li>链接MathFunctions::MathFunctions到myexe</li>
+</ol>
+<h2 id="支持find-package"><a href="#支持find-package" class="headerlink" title="支持find_package()"></a>支持<code>find_package()</code></h2><p>使用示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">find_package(Stats 2.6.4 REQUIRED)</span><br><span class="line">target_link_libraries(MathFunctions PUBLIC Stats::Types)</span><br></pre></td></tr></table></figure>
+
+<p>find_package() 支持两种搜索模式</p>
+<ul>
+<li>module mode， 针对非cmake构建的库，搜索<code>Find&lt;PackageName&gt;.cmake</code>文件</li>
+<li>config mode， 针对cmake构建的库，相关文件为<ul>
+<li>target相关： <code>&lt;lowercasePackageName&gt;-config.cmake</code>或者<code>&lt;PackageName&gt;Config.cmake</code></li>
+<li>版本相关： <code>&lt;lowercasePackageName&gt;-config-version.cmake</code> 或 <code>&lt;PackageName&gt;ConfigVersion.cmake</code></li>
+</ul>
+</li>
+</ul>
+<p>因此，cmake构建的库，想要支持<code>find_package()</code>的config模式，需要提供</p>
+<ul>
+<li><code>xxxConfig.cmake</code></li>
+<li><code>xxConfigVersion.cmake</code></li>
+</ul>
+<p>首先包含<code>CMakePackageConfigHelpers</code>模块</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">include(CMakePackageConfigHelpers)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Creating-a-Package-Configuration-File"><a href="#Creating-a-Package-Configuration-File" class="headerlink" title="Creating a Package Configuration File"></a>Creating a Package Configuration File</h3><p>使用<code>CMakePackageConfigHelpers</code>模块中的<code>configure_package_config_file</code>命令来生成<code>MathFunctionsConfig.cmake</code>文件，蓝本是<code>Config.cmake.in</code>,同时指定生成后的路径。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">configure_package_config_file($&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/Config.cmake.in</span><br><span class="line">  &quot;$&#123;CMAKE_CURRENT_BINARY_DIR&#125;/MathFunctionsConfig.cmake&quot;</span><br><span class="line">  INSTALL_DESTINATION $&#123;CMAKE_INSTALL_LIBDIR&#125;/cmake/MathFunctions</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>isntall</code>命令指定<code>xxxConfig.cmake</code>和<code>xxxConfigVersion.cmake</code>文件安装规则</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">install(FILES</span><br><span class="line">          &quot;$&#123;CMAKE_CURRENT_BINARY_DIR&#125;/MathFunctionsConfig.cmake&quot;</span><br><span class="line">          &quot;$&#123;CMAKE_CURRENT_BINARY_DIR&#125;/MathFunctionsConfigVersion.cmake&quot;</span><br><span class="line">        DESTINATION $&#123;CMAKE_INSTALL_LIBDIR&#125;/cmake/MathFunctions</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>关于<code>Config.cmake.in</code>文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@PACKAGE_INIT@</span><br><span class="line"></span><br><span class="line">include(&quot;$&#123;CMAKE_CURRENT_LIST_DIR&#125;/MathFunctionsTargets.cmake&quot;)</span><br><span class="line"></span><br><span class="line">check_required_components(MathFunctions)</span><br></pre></td></tr></table></figure>
+
+<p><code>@PACKAGE_INIT@</code> 在配置的时候，会被替换和展开，展开后包含</p>
+<ol>
+<li>以<code>PACKAGE_</code>为前缀的相对路径</li>
+<li><code>set_and_check()</code> 和 <code>heck_required_components()</code>两个宏定义。</li>
+</ol>
+<p><code>check_required_components</code> 针对所有的组件，给<code>&lt;Package&gt;_&lt;Component&gt;_FOUND</code>变量赋值， 找到为<code>TRUE</code>,找不到为<code>FALSE</code>。 同时给<code>&lt;Package&gt;_FOUND</code>变量赋值， 如果结果为<code>FALSE</code>,认为该package没有找到。</p>
+<p><code>set_and_check</code>主要给对应的目录和文件路径赋值，如果引用的文件或路径没有找到，该宏执行失败。</p>
+<h3 id="Creating-a-Package-Version-File"><a href="#Creating-a-Package-Version-File" class="headerlink" title="Creating a Package Version File"></a>Creating a Package Version File</h3><p><code>CMakePackageConfigHelpers</code>模块，提供了<code>write_basic_package_version_file()</code>命令来生成<code>xxConfigVersion.cmake</code>文件。 当<code>find_package()</code>命令指定了版本号的时候， cmake 会读取该文件来获取版本号信息做匹配</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">set(version 3.4.1)</span><br><span class="line"></span><br><span class="line">set_property(TARGET MathFunctions PROPERTY VERSION $&#123;version&#125;)</span><br><span class="line">set_property(TARGET MathFunctions PROPERTY SOVERSION 3)</span><br><span class="line">set_property(TARGET MathFunctions PROPERTY</span><br><span class="line">  INTERFACE_MathFunctions_MAJOR_VERSION 3)</span><br><span class="line">set_property(TARGET MathFunctions APPEND PROPERTY</span><br><span class="line">  COMPATIBLE_INTERFACE_STRING MathFunctions_MAJOR_VERSION</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"># generate the version file for the config file</span><br><span class="line">write_basic_package_version_file(</span><br><span class="line">  &quot;$&#123;CMAKE_CURRENT_BINARY_DIR&#125;/MathFunctionsConfigVersion.cmake&quot;</span><br><span class="line">  VERSION &quot;$&#123;version&#125;&quot;</span><br><span class="line">  COMPATIBILITY AnyNewerVersion</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>设置target的版本号相关的变量</li>
+<li>将版本号信息，写入<code>MathFunctionsConfigVersion.cmake</code>文件</li>
+</ol>
+<p>此时已经配置好如何生成<code>xxxConfig.cmake</code>和<code>xxxConfigVersion.cmake</code>文件.<br>执行构建，安装</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mkdir build </span><br><span class="line">cd build </span><br><span class="line">cmake ..</span><br><span class="line">cmake --build .</span><br><span class="line">cmake --install . --prefix `&lt;prefix&gt;`</span><br></pre></td></tr></table></figure>
+
+<p>观察输出, 对应的文件已经生成</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MathFunctionsConfig.cmake</span><br><span class="line">MathFunctionsConfigVersion.cmake</span><br><span class="line">MathFunctionsTargets-noconfig.cmake</span><br><span class="line">MathFunctionsTargets.cmake</span><br></pre></td></tr></table></figure>
+<p>使用<code>find_package()</code>来使用生成config文件, 此时需要通过<code>CMAKE_PREFIX_PATH</code>来指定config文件的搜罗路径。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">cmake_minimum_required(VERSION 3.15)</span><br><span class="line">project(Downstream)</span><br><span class="line"></span><br><span class="line"># specify the C++ standard</span><br><span class="line">set(CMAKE_CXX_STANDARD 11)</span><br><span class="line">set(CMAKE_CXX_STANDARD_REQUIRED True)</span><br><span class="line"></span><br><span class="line">find_package(MathFunctions 3.4.1 EXACT)</span><br><span class="line"></span><br><span class="line">add_executable(myexe main.cc)</span><br><span class="line">target_link_libraries(myexe PRIVATE MathFunctions::MathFunctions)</span><br></pre></td></tr></table></figure>
+
+<p>注意：<br>导出配置，不应该引用绝对路径，应当关联相对路径，这样，无论安装在哪里，都可以通过config文件正确索引到库。</p>
+<ol>
+<li>不应当显示的依赖<code>CMAKE_INSTALL_PREFIX</code></li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">target_include_directories(tgt INTERFACE</span><br><span class="line">  # Wrong, not relocatable:</span><br><span class="line">  $&lt;INSTALL_INTERFACE:$&#123;CMAKE_INSTALL_PREFIX&#125;/include/TgtName&gt;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">target_include_directories(tgt INTERFACE</span><br><span class="line">  # Ok, relocatable:</span><br><span class="line">  $&lt;INSTALL_INTERFACE:include/TgtName&gt;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>可以使用<code>$&lt;INSTALL_PREFIX&gt; generator expression</code></li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">target_include_directories(tgt INTERFACE</span><br><span class="line">  # Ok, relocatable:</span><br><span class="line">  $&lt;INSTALL_INTERFACE:$&lt;INSTALL_PREFIX&gt;/include/TgtName&gt;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yxibng.github.io">yxibng</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yxibng.github.io/2022/10/24/cmake/2022-10-24-cmake%20Importing%20and%20Exporting%20Guide/">https://yxibng.github.io/2022/10/24/cmake/2022-10-24-cmake%20Importing%20and%20Exporting%20Guide/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://yxibng.github.io" target="_blank">yxibng</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/cmake/">cmake</a></div><div class="post-share"><div class="social-share" data-image="https://github.com/yxibng.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2022/10/29/c++/2022-10-29-Xcode%20%E9%85%8D%E7%BD%AE%20clang-format%20%E6%A0%BC%E5%BC%8F%E5%8C%96%20c++%20%E4%BB%A3%E7%A0%81/" title="Xcode 配置 clang-format 格式化 C++代码"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Xcode 配置 clang-format 格式化 C++代码</div></div><div class="info-2"><div class="info-item-1">在命令行，通过clang-format工具，可以对代码进行格式化。但 clang-fromat 只能在终端中使用，有没有什么办法可以让它在Xcode中也可以使用呢，这样就很方便的对当前文档进行格式化了。 答案是： 借助 macOS 自带的 Automator 工具。 clang-format 安装1brew install clang-format  添加 Automator 服务打开 Automator 选择  “Quick Action”。 左侧 Library 中搜索 “Run Shell Script” 并拖动到右侧。在脚本编辑框中输入以下内容： 12source ~/.zshrcclang-format  同时记得勾选上 “Output replaces selected text”，然后保存并输入保存的名称，比如 clang-format。 至此一个服务便已添加好。 Automator 在磁盘上的位置The location of the user created services is under: 1~/Library/Services/  other locat...</div></div></div></a><a class="pagination-related" href="/2022/10/23/cmake/2022-10-23-cmake%20add_custom_command/" title="cmake add_custom_command"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">cmake add_custom_command</div></div><div class="info-2"><div class="info-item-1">目的： 添加自定义的构建规则到生成的构建系统中。 有两种用法：  使用外部命令来产生一个输出, 例如生成文件 监听一个target的构建事件，在target构建前或者构建后，执行命令  Examples: Generating Files添加命令，执行后生成源文件 1234567add_custom_command(  OUTPUT out.c  COMMAND someTool -i $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/in.txt                   -o out.c  DEPENDS $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/in.txt  VERBATIM)add_library(myLib out.c)  通过生成器表达式，为每个config指定不同的输出 12345678add_custom_command(  OUTPUT &quot;out-$&lt;CONFIG&gt;.c&quot;  COMMAND someTool -i $&#123;CMAKE_CURRENT_SO...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2022/03/17/cmake/2022-03-17-cmake%20%E5%85%A5%E9%97%A8/" title="cmake 语言初识"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-17</div><div class="info-item-2">cmake 语言初识</div></div><div class="info-2"><div class="info-item-1">文件组织CMake源文件用cmake语言编写，共三种组织形式  Directories (CMakeLists.txt) 目录  Scripts (&lt;script&gt;.cmake) 脚本  Modules (&lt;module&gt;.cmake) 模块   Directories 目录用cmake 去编译项目时候，入口是项目顶级目录的CMakeLists.txt文件，CMakeLists.txt描述了当前项目构建规则。当遇到add _ subdirectory ()命令，cmake会去命令指定的子目录中搜索CMakeLists.txt，将其添加到构建过程，这是一个递归解析的过程。子目录中的CMakeLists.txt描述了子项目的构建规则。 Scripts 脚本一个单独的&lt;script&gt;.cmake文件可以被当做脚本来处理，可以理解为shell脚本，通过cmake来解析和执行脚本定义的操作。脚本中不允许出现定义构建目标和构建行为的命令， cmake 脚本不参与构建过程。 1cmake [&#123;-D &lt;var&gt;=&lt;value&gt;...</div></div></div></a><a class="pagination-related" href="/2024/04/03/cmake/2024-04-03-cmake-ios-code-sign/" title="CMake ios code signing"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-03</div><div class="info-item-2">CMake ios code signing</div></div><div class="info-2"><div class="info-item-1">Error MessageWhen I build soundtouch for ios, met following error 12error: Bundle identifier is missing. soundstretch doesn&#x27;t have a bundle identifier. Add a value for PRODUCT_BUNDLE_IDENTIFIER in the build settings editor. (in target &#x27;soundstretch&#x27; from project &#x27;SoundTouch&#x27;)note: Run script build phase &#x27;Generate CMakeFiles/ALL_BUILD&#x27; will be run during every build because the option to run the script phase &quot;Based on dependency analysis&quot; is uncheck...</div></div></div></a><a class="pagination-related" href="/2022/03/13/cmake/2022-03-13-cmake%20find_package/" title="cmake find_package"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-13</div><div class="info-item-2">cmake find_package</div></div><div class="info-2"><div class="info-item-1">参考：  官方文档  find_package  Cmake之深入理解find_package()的用法   使用通过find_package命令，可以找到三方库对应的头文件路径和库文件路径，不用手动管理这些路径了。例如要引用CURL库，在CMakeLists文件可以简单写成下面的形式 12345678find_package(CURL)add_executable(curltest curltest.cc)if(CURL_FOUND)    target_include_directories(clib PRIVATE $&#123;CURL_INCLUDE_DIR&#125;)    target_link_libraries(curltest $&#123;CURL_LIBRARY&#125;)else(CURL_FOUND)    message(FATAL_ERROR ”CURL library not found”)endif(CURL_FOUND)  原理find_package 有两种搜索模式 Module mode在CMAKE_MODULE_PATH指定的路径下...</div></div></div></a><a class="pagination-related" href="/2022/10/23/cmake/2022-10-23-cmake%20add_custom_command/" title="cmake add_custom_command"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-10-23</div><div class="info-item-2">cmake add_custom_command</div></div><div class="info-2"><div class="info-item-1">目的： 添加自定义的构建规则到生成的构建系统中。 有两种用法：  使用外部命令来产生一个输出, 例如生成文件 监听一个target的构建事件，在target构建前或者构建后，执行命令  Examples: Generating Files添加命令，执行后生成源文件 1234567add_custom_command(  OUTPUT out.c  COMMAND someTool -i $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/in.txt                   -o out.c  DEPENDS $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/in.txt  VERBATIM)add_library(myLib out.c)  通过生成器表达式，为每个config指定不同的输出 12345678add_custom_command(  OUTPUT &quot;out-$&lt;CONFIG&gt;.c&quot;  COMMAND someTool -i $&#123;CMAKE_CURRENT_SO...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">yxibng</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yxibng" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Importing"><span class="toc-number">1.</span> <span class="toc-text">Importing</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Importing-Executables"><span class="toc-number">1.1.</span> <span class="toc-text">Importing Executables</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Importing-Libraries"><span class="toc-number">1.2.</span> <span class="toc-text">Importing Libraries</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Exporting-Targets"><span class="toc-number">2.</span> <span class="toc-text">Exporting Targets</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#xxxTargets-cmake"><span class="toc-number">2.1.</span> <span class="toc-text">xxxTargets.cmake</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%AF%E6%8C%81find-package"><span class="toc-number">2.2.</span> <span class="toc-text">支持find_package()</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Creating-a-Package-Configuration-File"><span class="toc-number">2.2.1.</span> <span class="toc-text">Creating a Package Configuration File</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Creating-a-Package-Version-File"><span class="toc-number">2.2.2.</span> <span class="toc-text">Creating a Package Version File</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/16/%E5%BE%AE%E4%BF%A1%20xlog%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="无标题">无标题</a><time datetime="2026-04-16T14:24:32.737Z" title="发表于 2026-04-16 22:24:32">2026-04-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/04/03/cmake/2024-04-03-cmake-ios-code-sign/" title="CMake ios code signing">CMake ios code signing</a><time datetime="2024-04-02T16:00:00.000Z" title="发表于 2024-04-03 00:00:00">2024-04-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/18/ios/2024-03-18-ios-xib/" title="ios xib 总结">ios xib 总结</a><time datetime="2024-03-17T16:00:00.000Z" title="发表于 2024-03-18 00:00:00">2024-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/08/debug-xlog-osx/" title="Xcode 源码调试微信 xlog">Xcode 源码调试微信 xlog</a><time datetime="2024-03-07T16:00:00.000Z" title="发表于 2024-03-08 00:00:00">2024-03-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/06/09/c++/2023-06-09-%E4%BD%8D%E5%9F%9F%20%E9%AB%98%E4%BD%8E%E4%BD%8D/" title="结构体位域中的高低位问题">结构体位域中的高低位问题</a><time datetime="2023-06-08T16:00:00.000Z" title="发表于 2023-06-09 00:00:00">2023-06-09</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2022 - 2026 By yxibng</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script src="js/local-search-fix.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="输入关键词搜索..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>

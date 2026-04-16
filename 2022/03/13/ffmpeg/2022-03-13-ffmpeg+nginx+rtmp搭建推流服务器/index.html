@@ -1,0 +1,179 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>ffmpeg+nginx+rtmp搭建本地推流服务器 | yxibng</title><meta name="author" content="yxibng"><meta name="copyright" content="yxibng"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="安装nginx+rtmp12brew tap denji&#x2F;nginxbrew install nginx-full --with-rtmp-module  配置nginx.conf,路径&#x2F;opt&#x2F;homebrew&#x2F;etc&#x2F;nginx&#x2F;nginx.conf123456789101112131415161718192021222324rtmp &#123;    server &#123;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ffmpeg+nginx+rtmp搭建本地推流服务器">
+<meta property="og:url" content="https://yxibng.github.io/2022/03/13/ffmpeg/2022-03-13-ffmpeg+nginx+rtmp%E6%90%AD%E5%BB%BA%E6%8E%A8%E6%B5%81%E6%9C%8D%E5%8A%A1%E5%99%A8/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:description" content="安装nginx+rtmp12brew tap denji&#x2F;nginxbrew install nginx-full --with-rtmp-module  配置nginx.conf,路径&#x2F;opt&#x2F;homebrew&#x2F;etc&#x2F;nginx&#x2F;nginx.conf123456789101112131415161718192021222324rtmp &#123;    server &#123;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/yxibng.png">
+<meta property="article:published_time" content="2022-03-12T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-16T14:24:32.736Z">
+<meta property="article:author" content="yxibng">
+<meta property="article:tag" content="ffmpeg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/yxibng.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "ffmpeg+nginx+rtmp搭建本地推流服务器",
+  "url": "https://yxibng.github.io/2022/03/13/ffmpeg/2022-03-13-ffmpeg+nginx+rtmp%E6%90%AD%E5%BB%BA%E6%8E%A8%E6%B5%81%E6%9C%8D%E5%8A%A1%E5%99%A8/",
+  "image": "https://github.com/yxibng.png",
+  "datePublished": "2022-03-12T16:00:00.000Z",
+  "dateModified": "2026-04-16T14:24:32.736Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "yxibng",
+      "url": "https://yxibng.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yxibng.github.io/2022/03/13/ffmpeg/2022-03-13-ffmpeg+nginx+rtmp%E6%90%AD%E5%BB%BA%E6%8E%A8%E6%B5%81%E6%9C%8D%E5%8A%A1%E5%99%A8/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ffmpeg+nginx+rtmp搭建本地推流服务器',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">yxibng</span></a><a class="nav-page-title" href="/"><span class="site-name">ffmpeg+nginx+rtmp搭建本地推流服务器</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">ffmpeg+nginx+rtmp搭建本地推流服务器</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2022-03-12T16:00:00.000Z" title="发表于 2022-03-13 00:00:00">2022-03-13</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="安装nginx-rtmp"><a href="#安装nginx-rtmp" class="headerlink" title="安装nginx+rtmp"></a>安装<a target="_blank" rel="noopener" href="https://github.com/denji/homebrew-nginx">nginx</a>+<a target="_blank" rel="noopener" href="https://github.com/sergey-dryabzhinsky/nginx-rtmp-module">rtmp</a></h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew tap denji/nginx</span><br><span class="line">brew install nginx-full --with-rtmp-module</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置nginx-conf-路径-opt-homebrew-etc-nginx-nginx-conf"><a href="#配置nginx-conf-路径-opt-homebrew-etc-nginx-nginx-conf" class="headerlink" title="配置nginx.conf,路径/opt/homebrew/etc/nginx/nginx.conf"></a>配置<code>nginx.conf</code>,路径<code>/opt/homebrew/etc/nginx/nginx.conf</code></h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">rtmp &#123;</span><br><span class="line">    server &#123;</span><br><span class="line">        listen 1935;</span><br><span class="line">        chunk_size 4096;</span><br><span class="line"></span><br><span class="line">        # live on</span><br><span class="line">        application rtmp_live &#123;</span><br><span class="line">            live on;</span><br><span class="line">            # hls on; #这个参数把直播服务器改造成实时回放服务器。</span><br><span class="line">            # wait_key on; #对视频切片进行保护，这样就不会产生马赛克了。</span><br><span class="line">            # hls_path ./sbin/html; #切片视频文件存放位置。</span><br><span class="line">            # hls_fragment 10s;     #每个视频切片的时长。</span><br><span class="line">            # hls_playlist_length 60s;  #总共可以回看的时间，这里设置的是1分钟。</span><br><span class="line">            # hls_continuous on; #连续模式。</span><br><span class="line">            # hls_cleanup on;    #对多余的切片进行删除。</span><br><span class="line">            # hls_nested on;     #嵌套模式。</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        # play videos</span><br><span class="line">        application rtmp_play&#123;</span><br><span class="line">            play ./videos;  #build directory</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>更多配置参考:<a target="_blank" rel="noopener" href="https://github.com/sergey-dryabzhinsky/nginx-rtmp-module#example-nginxconf">example-nginxconf</a></p>
+<h3 id="重启-nginx"><a href="#重启-nginx" class="headerlink" title="重启 nginx"></a>重启 nginx</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Reload config:</span><br><span class="line"> $ nginx -s reload</span><br><span class="line">Reopen Logfile:</span><br><span class="line"> $ nginx -s reopen</span><br><span class="line">Stop process:</span><br><span class="line"> $ nginx -s stop</span><br><span class="line">Waiting on exit process</span><br><span class="line"> $ nginx -s quit</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用ffmpeg-推流"><a href="#使用ffmpeg-推流" class="headerlink" title="使用ffmpeg 推流"></a>使用ffmpeg 推流</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -re -i test.flv -vcodec libx264 -acodec aac -strict -2 -f flv rtmp://localhost:1935/$app/$name</span><br></pre></td></tr></table></figure>
+
+<p>上面定义的app叫rtmp_live，假设name&#x3D;video</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -re -i test.flv -vcodec libx264 -acodec aac -strict -2 -f flv rtmp://localhost:1935/rtmp_live/video</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用ffplay拉流或者vlc拉流"><a href="#使用ffplay拉流或者vlc拉流" class="headerlink" title="使用ffplay拉流或者vlc拉流"></a>使用ffplay拉流或者vlc拉流</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffplay rtmp://localhost:1935/rtmp_live/video</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/guoxiaopang/LiveExplanation/blob/master/MACOS%E4%B8%8A%E6%90%AD%E5%BB%BAnginx%2Brtmp%E7%8E%AF%E5%A2%83.md">MACOS上搭建nginx+rtmp环境</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yxibng.github.io">yxibng</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yxibng.github.io/2022/03/13/ffmpeg/2022-03-13-ffmpeg+nginx+rtmp%E6%90%AD%E5%BB%BA%E6%8E%A8%E6%B5%81%E6%9C%8D%E5%8A%A1%E5%99%A8/">https://yxibng.github.io/2022/03/13/ffmpeg/2022-03-13-ffmpeg+nginx+rtmp%E6%90%AD%E5%BB%BA%E6%8E%A8%E6%B5%81%E6%9C%8D%E5%8A%A1%E5%99%A8/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://yxibng.github.io" target="_blank">yxibng</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/ffmpeg/">ffmpeg</a></div><div class="post-share"><div class="social-share" data-image="https://github.com/yxibng.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2022/03/13/ffmpeg/2022-03-14-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%205/" title="ffmpeg example 5.硬件解码"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">ffmpeg example 5.硬件解码</div></div><div class="info-2"><div class="info-item-1">在hw_decode.c示例中，ffmpeg展示了如何使用硬件加速来解码视频，我们来分析一下是怎么实现的。 硬件加速设备类型展示所有可用的硬件加速方法, 在mac上只找到了videotoolbox加速的方式。 123ffmpeg -hwaccelsHardware acceleration methods:videotoolbox  查看 AVHWDeviceType的定义，发现别的平台可以使用cuda，opencl， mediacodec，vulkan等来实现硬件加速。 1234567891011121314enum AVHWDeviceType &#123;    AV_HWDEVICE_TYPE_NONE,    AV_HWDEVICE_TYPE_VDPAU,    AV_HWDEVICE_TYPE_CUDA,    AV_HWDEVICE_TYPE_VAAPI,    AV_HWDEVICE_TYPE_DXVA2,    AV_HWDEVICE_TYPE_QSV,    AV_HWDEVICE_TYPE_VIDEOTOOLBOX,    AV_HWDEVICE_TYPE_...</div></div></div></a><a class="pagination-related" href="/2022/03/13/cmake/2022-03-13-cmake%20find_package/" title="cmake find_package"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">cmake find_package</div></div><div class="info-2"><div class="info-item-1">参考：  官方文档  find_package  Cmake之深入理解find_package()的用法   使用通过find_package命令，可以找到三方库对应的头文件路径和库文件路径，不用手动管理这些路径了。例如要引用CURL库，在CMakeLists文件可以简单写成下面的形式 12345678find_package(CURL)add_executable(curltest curltest.cc)if(CURL_FOUND)    target_include_directories(clib PRIVATE $&#123;CURL_INCLUDE_DIR&#125;)    target_link_libraries(curltest $&#123;CURL_LIBRARY&#125;)else(CURL_FOUND)    message(FATAL_ERROR ”CURL library not found”)endif(CURL_FOUND)  原理find_package 有两种搜索模式 Module mode在CMAKE_MODULE_PATH指定的路径下...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2022/03/09/ffmpeg/2022-03-09-%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8vscode%E5%9C%A8macOS%E5%B9%B3%E5%8F%B0%E8%B0%83%E8%AF%95ffmpeg/" title="如何使用vscode在macOS平台调试ffmpeg"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-09</div><div class="info-item-2">如何使用vscode在macOS平台调试ffmpeg</div></div><div class="info-2"><div class="info-item-1">使用vscode调试ffmpeg准备知识：Debug C++ in Visual Studio Code ffmpeg 源码 https://github.com/FFmpeg/FFmpeg.git ffmpeg 配置, 使其支持调试关于-g3相关知识gcc-g-vs-g3-gdb-flag-what-is-the-difference 12./configure  --disable-optimizations --disable-stripping --enable-debug=3 --disable-docmake -j `nproc`  以_g结尾的就是可以调试的程序ffmpeg_g, ffplay_g, ffprobe_g vscode配置 如下命令： 12# macOS上列出所有的音视频设备ffmpeg -f avfoundation -list_devices true -i &quot;&quot;   launch.json 对应的配置  1234567891011121314151617181920&#123;    // Use IntelliSense t...</div></div></div></a><a class="pagination-related" href="/2022/03/09/ffmpeg/2022-03-09-%E4%BD%BF%E7%94%A8Xcode%E8%B0%83%E8%AF%95ffmpeg/" title="使用Xcode调试ffmpeg"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-09</div><div class="info-item-2">使用Xcode调试ffmpeg</div></div><div class="info-2"><div class="info-item-1">ffmpeg 源码 https://github.com/FFmpeg/FFmpeg.git ffmpeg 配置, 使其支持调试12./configure  --disable-optimizations --disable-stripping --enable-debug=3 --disable-docmake -j `nproc`    以_g结尾的就是可以调试的程序ffmpeg_g, ffplay_g, ffprobe_g Xcode 配置  把 ffmpeg 目录拖进工程，等待添加完成，可能时间较久  等待加载完毕  添加target， 比如说调试ffplay_g   修改对应的路径  修改scheme，选择ffplay_g为可执行目标  给ffplay_g传递参数  开始打断点调试吧  调试 ffmpeg官方的示例程序，示例位于ffmpeg/doc/examples路径下面12cd ffmpegmake examples  后缀带_g的都是可以调试的  与调试ffplay_g一样，添加target，配置路径，配置可执行目标，添加参数，愉快地调试吧！  参考： Xcode...</div></div></div></a><a class="pagination-related" href="/2022/03/15/ffmpeg/2022-03-15-ffplay-frame%20queue%20%E5%88%86%E6%9E%90/" title="ffplay frame queue 分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-15</div><div class="info-item-2">ffplay frame queue 分析</div></div><div class="info-2"><div class="info-item-1">参考：  ffplay frame queue分析 FrameQueue数据结构ffplay 定义了 FrameQueue 来管理解码后的音频，视频以及字幕。 12345678910111213141516171819202122232425262728/* Common struct for handling all types of decoded data and allocated render buffers. */typedef struct Frame &#123;    AVFrame *frame;       //audio/video frame    AVSubtitle sub;       //字幕    int serial;           //序列号    double pts;           /* presentation timestamp for the frame */    double duration;      /* estimated duration of the frame */    int64_t pos;  ...</div></div></div></a><a class="pagination-related" href="/2022/03/20/ffmpeg/2022-03-20-ffplay%20read_thread%20%E5%88%86%E6%9E%90/" title="ffplay read_thread 分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-20</div><div class="info-item-2">ffplay read_thread 分析</div></div><div class="info-2"><div class="info-item-1">参考： ffplay read线程分析  ffplay main 函数 做了什么   参数验证与解析  注册codecs， demux， protocols  sdl 初始化，创建窗口  调用stream_open打开流  调用event_loop进入运行循环    stream_open 做了什么      主要是初始化VideoState *is，填充关键信息  初始化，分配内存is = av_mallocz(sizeof(VideoState));  调用frame_queue_init给VideoState对应的音频，视频，字幕对应Frame队列初始化分配内存  调用packet_queue_init给VideoState对应的音频，视频，字幕对应Packet队列初始化分配内存  创建条件变量continue_read_thread， 用于控制是否继续读取或者等待  调用init_clock 初始化音频，视频，外部时钟  设置同步类型av_sync_type  创建并开启read_thread   read_thread分为两个阶段：  准备阶段  循环读pkt   准备...</div></div></div></a><a class="pagination-related" href="/2022/03/12/ffmpeg/2022-03-12-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%203/" title="ffmpeg example 3.音频编码"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-12</div><div class="info-item-2">ffmpeg example 3.音频编码</div></div><div class="info-2"><div class="info-item-1">关于如何源码调试，参考前面的文章ffmpeg example 视频编码 - 掘金 今天分析encode_audio.c学习ffmpeg如何编码音频数据，由于太简单了，直接贴代码 ##main函数 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109110111112113114115116117118119120121122123124125126127128int main(int argc, char **argv)&#123;    const char *filename;    const AVCodec *codec;    AVCodecContext *c= NULL;    AVFr...</div></div></div></a><a class="pagination-related" href="/2022/03/10/ffmpeg/2022-03-10-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%201/" title="ffmpeg example 1.解封装，解码学习"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-10</div><div class="info-item-2">ffmpeg example 1.解封装，解码学习</div></div><div class="info-2"><div class="info-item-1">背景学习ffmpeg，打算从源码入手，源码又太多太复杂。好在ffmpeg提供了示例代码，演示如何使用ffmpeg的api， 示例代码位于ffmpeg/doc/examples目录下，可以通过vscode 来调试这些示例代码，理解ffmpeg的调用方式。 该目录下的示例代码如下   decode_audio.c  演示如何解码音频  decode_video.c  演示如何解码视频  demuxing_decoding.c  演示如何解封装文件，和解码音视频   今天来分析 demuxing_decoding.c 流程使用的模块libavutil,libavcodec,libavformat  libavutil  包含一些公共的工具函数  libavcodec 用于各种类型声音&#x2F;图像编解码  libavformat 用于各种音视频封装格式的生成和解析，包括获取解码所需信息以生成解码上下文结构和读取音视频帧等功能，包含demuxers和muxer库   1.解封装 打开文件、获取封装信息上下文AVFormatContext（avformat_open_input）  获取...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">yxibng</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yxibng" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85nginx-rtmp"><span class="toc-number">1.</span> <span class="toc-text">安装nginx+rtmp</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AEnginx-conf-%E8%B7%AF%E5%BE%84-opt-homebrew-etc-nginx-nginx-conf"><span class="toc-number">2.</span> <span class="toc-text">配置nginx.conf,路径&#x2F;opt&#x2F;homebrew&#x2F;etc&#x2F;nginx&#x2F;nginx.conf</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8D%E5%90%AF-nginx"><span class="toc-number">2.1.</span> <span class="toc-text">重启 nginx</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8ffmpeg-%E6%8E%A8%E6%B5%81"><span class="toc-number">3.</span> <span class="toc-text">使用ffmpeg 推流</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8ffplay%E6%8B%89%E6%B5%81%E6%88%96%E8%80%85vlc%E6%8B%89%E6%B5%81"><span class="toc-number">4.</span> <span class="toc-text">使用ffplay拉流或者vlc拉流</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/16/%E5%BE%AE%E4%BF%A1%20xlog%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="无标题">无标题</a><time datetime="2026-04-16T14:24:32.737Z" title="发表于 2026-04-16 22:24:32">2026-04-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/04/03/cmake/2024-04-03-cmake-ios-code-sign/" title="CMake ios code signing">CMake ios code signing</a><time datetime="2024-04-02T16:00:00.000Z" title="发表于 2024-04-03 00:00:00">2024-04-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/18/ios/2024-03-18-ios-xib/" title="ios xib 总结">ios xib 总结</a><time datetime="2024-03-17T16:00:00.000Z" title="发表于 2024-03-18 00:00:00">2024-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/08/debug-xlog-osx/" title="Xcode 源码调试微信 xlog">Xcode 源码调试微信 xlog</a><time datetime="2024-03-07T16:00:00.000Z" title="发表于 2024-03-08 00:00:00">2024-03-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/06/09/c++/2023-06-09-%E4%BD%8D%E5%9F%9F%20%E9%AB%98%E4%BD%8E%E4%BD%8D/" title="结构体位域中的高低位问题">结构体位域中的高低位问题</a><time datetime="2023-06-08T16:00:00.000Z" title="发表于 2023-06-09 00:00:00">2023-06-09</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2022 - 2026 By yxibng</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script src="js/local-search-fix.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="输入关键词搜索..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>

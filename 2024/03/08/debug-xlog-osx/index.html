@@ -1,0 +1,185 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Xcode 源码调试微信 xlog | yxibng</title><meta name="author" content="yxibng"><meta name="copyright" content="yxibng"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Tencent&#x2F;masr xlog macOS 源码调试get include folder1234567cd marspython build_osx.pyEnter menu:1. Clean &amp;&amp; build.2. Gen OSX Project.3. Build xlog.4. Exit  选择1，生成 mars.framework, 我们主要是使用头文件目录。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Xcode 源码调试微信 xlog">
+<meta property="og:url" content="https://yxibng.github.io/2024/03/08/debug-xlog-osx/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:description" content="Tencent&#x2F;masr xlog macOS 源码调试get include folder1234567cd marspython build_osx.pyEnter menu:1. Clean &amp;&amp; build.2. Gen OSX Project.3. Build xlog.4. Exit  选择1，生成 mars.framework, 我们主要是使用头文件目录。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/yxibng.png">
+<meta property="article:published_time" content="2024-03-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-16T14:24:32.735Z">
+<meta property="article:author" content="yxibng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/yxibng.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Xcode 源码调试微信 xlog",
+  "url": "https://yxibng.github.io/2024/03/08/debug-xlog-osx/",
+  "image": "https://github.com/yxibng.png",
+  "datePublished": "2024-03-07T16:00:00.000Z",
+  "dateModified": "2026-04-16T14:24:32.735Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "yxibng",
+      "url": "https://yxibng.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yxibng.github.io/2024/03/08/debug-xlog-osx/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Xcode 源码调试微信 xlog',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">yxibng</span></a><a class="nav-page-title" href="/"><span class="site-name">Xcode 源码调试微信 xlog</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Xcode 源码调试微信 xlog</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2024-03-07T16:00:00.000Z" title="发表于 2024-03-08 00:00:00">2024-03-08</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="Tencent-masr-xlog-macOS-源码调试"><a href="#Tencent-masr-xlog-macOS-源码调试" class="headerlink" title="Tencent&#x2F;masr xlog macOS 源码调试"></a>Tencent&#x2F;masr xlog macOS 源码调试</h1><h2 id="get-include-folder"><a href="#get-include-folder" class="headerlink" title="get include folder"></a>get include folder</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cd mars</span><br><span class="line">python build_osx.py</span><br><span class="line">Enter menu:</span><br><span class="line">1. Clean &amp;&amp; build.</span><br><span class="line">2. Gen OSX Project.</span><br><span class="line">3. Build xlog.</span><br><span class="line">4. Exit</span><br></pre></td></tr></table></figure>
+
+<p>选择1，生成 <code>mars.framework</code>, 我们主要是使用头文件目录。</p>
+<h2 id="gen-osx-project"><a href="#gen-osx-project" class="headerlink" title="gen osx project"></a>gen osx project</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cd mars</span><br><span class="line">python build_osx.py</span><br><span class="line">Enter menu:</span><br><span class="line">1. Clean &amp;&amp; build.</span><br><span class="line">2. Gen OSX Project.</span><br><span class="line">3. Build xlog.</span><br><span class="line">4. Exit</span><br><span class="line"># input 2</span><br></pre></td></tr></table></figure>
+
+<p>执行结果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-- ==============config mars====================</span><br><span class="line">-- Configuring done (6.6s)</span><br><span class="line">-- Generating done (0.0s)</span><br><span class="line">-- Build files have been written to: /Users/yxibng/Github/mars/mars/cmake_build/OSX</span><br></pre></td></tr></table></figure>
+
+<p>在 mars&#x2F;cmake_build&#x2F;OSX 目录中找到 mars.xcodeproj</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cd mars/cmake_build/OSX </span><br><span class="line"></span><br><span class="line">ls</span><br><span class="line">CMakeCache.txt       baseevent            comm                 sdt</span><br><span class="line">CMakeFiles           boost                include              stn</span><br><span class="line">CMakeScripts         boot                 install_manifest.txt xlog</span><br><span class="line">Darwin.out           build                lib                  zstd</span><br><span class="line">app                  cmake_install.cmake  mars.xcodeproj</span><br></pre></td></tr></table></figure>
+
+<h2 id="将-mars-xcodeproj-作为子工程，添加为依赖项"><a href="#将-mars-xcodeproj-作为子工程，添加为依赖项" class="headerlink" title="将 mars.xcodeproj 作为子工程，添加为依赖项"></a>将 mars.xcodeproj 作为子工程，添加为依赖项</h2><p>通过 cmake 生成的 project 定义了生成 mars.framework 的几个相关target， 将 mars.xcodeproj 设置为子工程，<br>主工程依赖 mars.xcodeproj 定义的target，即可实现 xlog 的源码调试。</p>
+<ol>
+<li>create new macOS project: xlog-test, selcte language: Objective-C</li>
+<li>mars.xcodeproj 添加到 xlog-test 工程中</li>
+<li>将 mars.framework&#x2F;Headers 拷贝到 xlog-test 根目录</li>
+<li>xlog-test 配置 header search paths， 值为 <code>$(SRCROOT)/Headers</code><br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/17098674388361709867437953.png" alt="17098674388361709867437953.png"></li>
+<li>xlog-test 配置 linked libraries<br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/17098675228351709867522443.png" alt="17098675228351709867522443.png"></li>
+<li>添加辅助代码，从 MacDemo 中获取， 拷贝到 xlog-test 工程中<br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/17098675948351709867593931.png" alt="17098675948351709867593931.png"></li>
+<li>LogHelper 中添加 setup 方法，用于初始化 xlog<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">+ (void)setup &#123;</span><br><span class="line">    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);</span><br><span class="line">    NSString *libraryDirectory = [paths firstObject];</span><br><span class="line">    </span><br><span class="line">    // init xlog</span><br><span class="line">#if DEBUG</span><br><span class="line">    xlogger_SetLevel(kLevelDebug);</span><br><span class="line">    mars::xlog::appender_set_console_log(true);</span><br><span class="line">#else</span><br><span class="line">    xlogger_SetLevel(kLevelInfo);</span><br><span class="line">    appender_set_console_log(false);</span><br><span class="line">#endif</span><br><span class="line">    mars::xlog::XLogConfig config;</span><br><span class="line">    config.mode_ = mars::xlog::kAppenderAsync;</span><br><span class="line">    config.logdir_ = [[libraryDirectory stringByAppendingString:@&quot;/log/&quot;] UTF8String];</span><br><span class="line">    config.nameprefix_ = &quot;Test&quot;;</span><br><span class="line">    config.pub_key_ = &quot;&quot;;</span><br><span class="line">    config.compress_mode_ = mars::xlog::kZlib;</span><br><span class="line">    config.compress_level_ = 0;</span><br><span class="line">    config.cachedir_ = &quot;&quot;;</span><br><span class="line">    config.cache_days_ = 0;</span><br><span class="line">    appender_open(config);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><code>main.m</code> 中初始化调用<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;Cocoa/Cocoa.h&gt;</span><br><span class="line">#import &quot;LogHelper.h&quot;</span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        [LogHelper setup];</span><br><span class="line">    &#125;</span><br><span class="line">    return NSApplicationMain(argc, argv);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>用<code>LogUtil.h</code>中宏定义打log<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LOG_ERROR(kModuleViewController, @&quot;this is a test log!&quot;);</span><br></pre></td></tr></table></figure></li>
+<li>愉快地断点，调试吧</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yxibng.github.io">yxibng</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yxibng.github.io/2024/03/08/debug-xlog-osx/">https://yxibng.github.io/2024/03/08/debug-xlog-osx/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://yxibng.github.io" target="_blank">yxibng</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://github.com/yxibng.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2024/03/18/ios/2024-03-18-ios-xib/" title="ios xib 总结"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">ios xib 总结</div></div><div class="info-2"><div class="info-item-1">Apple M1 arm64 - IBDesignable error: “incompatible architecture” (have ‘x86_64’, need ‘arm64’)1Failed to render and update auto layout status for ViewController (BYZ-38-t0r): dlopen(ICONButton.app, 0x0001): tried: &#x27;/ICONButton&#x27; (no such file), &#x27;/Library/Developer/CoreSimulator/Volumes/iOS_21E213/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 17.4.simruntime/Contents/Resources/RuntimeRootICONButton.app&#x27; (no such file), &#x27;ICONButton.app&#x27; (mach-o file, but is ...</div></div></div></a><a class="pagination-related" href="/2023/06/09/c++/2023-06-09-%E4%BD%8D%E5%9F%9F%20%E9%AB%98%E4%BD%8E%E4%BD%8D/" title="结构体位域中的高低位问题"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">结构体位域中的高低位问题</div></div><div class="info-2"><div class="info-item-1">测试代码如下： 1234567891011121314151617181920212223#include &lt;iostream&gt;union Test &#123;    unsigned char ch;    struct &#123;        uint8_t a: 1;        uint8_t b: 3;        uint8_t c: 2;        uint8_t d: 2;    &#125;;&#125;;int main(int argc, const char * argv[]) &#123;    Test test;    test.a = 1;    test.b = 0;    test.c = 0;    test.d = 0b11;    std::cout &lt;&lt; test.ch &lt;&lt; std::endl;    return 0;&#125;  在 macOS 上断点查看内存如下  结论：可以看到，定义在前的位域，在字节的低位。位域在内存中存储的顺序刚好与定义的先后相反。 </div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">yxibng</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yxibng" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Tencent-masr-xlog-macOS-%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95"><span class="toc-number">1.</span> <span class="toc-text">Tencent&#x2F;masr xlog macOS 源码调试</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#get-include-folder"><span class="toc-number">1.1.</span> <span class="toc-text">get include folder</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gen-osx-project"><span class="toc-number">1.2.</span> <span class="toc-text">gen osx project</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%86-mars-xcodeproj-%E4%BD%9C%E4%B8%BA%E5%AD%90%E5%B7%A5%E7%A8%8B%EF%BC%8C%E6%B7%BB%E5%8A%A0%E4%B8%BA%E4%BE%9D%E8%B5%96%E9%A1%B9"><span class="toc-number">1.3.</span> <span class="toc-text">将 mars.xcodeproj 作为子工程，添加为依赖项</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/16/%E5%BE%AE%E4%BF%A1%20xlog%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="无标题">无标题</a><time datetime="2026-04-16T14:24:32.737Z" title="发表于 2026-04-16 22:24:32">2026-04-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/04/03/cmake/2024-04-03-cmake-ios-code-sign/" title="CMake ios code signing">CMake ios code signing</a><time datetime="2024-04-02T16:00:00.000Z" title="发表于 2024-04-03 00:00:00">2024-04-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/18/ios/2024-03-18-ios-xib/" title="ios xib 总结">ios xib 总结</a><time datetime="2024-03-17T16:00:00.000Z" title="发表于 2024-03-18 00:00:00">2024-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/08/debug-xlog-osx/" title="Xcode 源码调试微信 xlog">Xcode 源码调试微信 xlog</a><time datetime="2024-03-07T16:00:00.000Z" title="发表于 2024-03-08 00:00:00">2024-03-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/06/09/c++/2023-06-09-%E4%BD%8D%E5%9F%9F%20%E9%AB%98%E4%BD%8E%E4%BD%8D/" title="结构体位域中的高低位问题">结构体位域中的高低位问题</a><time datetime="2023-06-08T16:00:00.000Z" title="发表于 2023-06-09 00:00:00">2023-06-09</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2022 - 2026 By yxibng</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script src="js/local-search-fix.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="输入关键词搜索..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>

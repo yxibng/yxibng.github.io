@@ -1,0 +1,272 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>cmake 语言初识 | yxibng</title><meta name="author" content="yxibng"><meta name="copyright" content="yxibng"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="文件组织CMake源文件用cmake语言编写，共三种组织形式  Directories (CMakeLists.txt) 目录  Scripts (&lt;script&gt;.cmake) 脚本  Modules (&lt;module&gt;.cmake) 模块   Directories 目录用cmake 去编译项目时候，入口是项目顶级目录的CMakeLists.txt文件，CMakeLis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cmake 语言初识">
+<meta property="og:url" content="https://yxibng.github.io/2022/03/17/cmake/2022-03-17-cmake%20%E5%85%A5%E9%97%A8/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:description" content="文件组织CMake源文件用cmake语言编写，共三种组织形式  Directories (CMakeLists.txt) 目录  Scripts (&lt;script&gt;.cmake) 脚本  Modules (&lt;module&gt;.cmake) 模块   Directories 目录用cmake 去编译项目时候，入口是项目顶级目录的CMakeLists.txt文件，CMakeLis">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/yxibng.png">
+<meta property="article:published_time" content="2022-03-16T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-16T14:24:32.734Z">
+<meta property="article:author" content="yxibng">
+<meta property="article:tag" content="cmake">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/yxibng.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "cmake 语言初识",
+  "url": "https://yxibng.github.io/2022/03/17/cmake/2022-03-17-cmake%20%E5%85%A5%E9%97%A8/",
+  "image": "https://github.com/yxibng.png",
+  "datePublished": "2022-03-16T16:00:00.000Z",
+  "dateModified": "2026-04-16T14:24:32.734Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "yxibng",
+      "url": "https://yxibng.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yxibng.github.io/2022/03/17/cmake/2022-03-17-cmake%20%E5%85%A5%E9%97%A8/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'cmake 语言初识',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">yxibng</span></a><a class="nav-page-title" href="/"><span class="site-name">cmake 语言初识</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">cmake 语言初识</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2022-03-16T16:00:00.000Z" title="发表于 2022-03-17 00:00:00">2022-03-17</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="文件组织"><a href="#文件组织" class="headerlink" title="文件组织"></a>文件组织</h1><p>CMake源文件用cmake语言编写，共三种组织形式</p>
+<ul>
+<li><p><a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/manual/cmake-language.7.html#directories">Directories</a> (<code>CMakeLists.txt</code>) 目录</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/manual/cmake-language.7.html#scripts">Scripts</a> (<code>&lt;script&gt;.cmake</code>) 脚本</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/manual/cmake-language.7.html#modules">Modules</a> (<code>&lt;module&gt;.cmake</code>) 模块</p>
+</li>
+</ul>
+<h3 id="Directories-目录"><a href="#Directories-目录" class="headerlink" title="Directories 目录"></a>Directories 目录</h3><p>用cmake 去编译项目时候，入口是项目顶级目录的<code>CMakeLists.txt</code>文件，<code>CMakeLists.txt</code>描述了当前项目构建规则。当遇到<code>add _ subdirectory ()</code>命令，cmake会去命令指定的子目录中搜索<code>CMakeLists.txt</code>，将其添加到构建过程，这是一个递归解析的过程。子目录中的<code>CMakeLists.txt</code>描述了子项目的构建规则。</p>
+<h3 id="Scripts-脚本"><a href="#Scripts-脚本" class="headerlink" title="Scripts 脚本"></a>Scripts 脚本</h3><p>一个单独的<code>&lt;script&gt;.cmake</code>文件可以被当做脚本来处理，可以理解为shell脚本，通过cmake来解析和执行脚本定义的操作。脚本中不允许出现定义构建目标和构建行为的命令，</p>
+<p>cmake 脚本不参与构建过程。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake [&#123;-D &lt;var&gt;=&lt;value&gt;&#125;...] -P &lt;cmake-script-file&gt; [-- &lt;unparsed-options&gt;...]</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Process the given cmake file as a script written in the CMake language. No configure or generate step is performed and the cache is not modified. If variables are defined using <code>-D</code>, this must be done before the <code>-P</code> argument.</p>
+</blockquote>
+<blockquote>
+<p>Any options after <code>--</code> are not parsed by CMake, but they are still included in the set of <a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/variable/CMAKE_ARGV0.html#variable:CMAKE_ARGV0" title="CMAKE_ARGV0"><code>CMAKE_ARGV&lt;n&gt;</code></a> variables passed to the script (including the <code>--</code> itself).</p>
+</blockquote>
+<h3 id="Modules-模块"><a href="#Modules-模块" class="headerlink" title="Modules 模块"></a>Modules 模块</h3><p>就是一个cmake的源文件，形式<code>&lt;module&gt;.cmake</code>。可以在当前<code>CMakeLists.txt</code>或cmake源文件中，通过<code>include()</code>命令，引入其他cmake文件中定义的内容。类似于c语言的</p>
+<p><code>#include&lt;&gt;</code>。</p>
+<p>cmake 内置了很多的模块，可以通过<a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/manual/cmake-modules.7.html#manual:cmake-modules(7)">cmake-modules</a>查看。项目可以定义自己cmake modules，通过<a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/variable/CMAKE_MODULE_PATH.html#variable:CMAKE_MODULE_PATH">CMAKE_MODULE_PATH</a>来指定他们的路径。</p>
+<h1 id="cmake-变量"><a href="#cmake-变量" class="headerlink" title="cmake 变量"></a>cmake 变量</h1><ol>
+<li><p>cmake 变量的值是字符串类型</p>
+</li>
+<li><p>Set ()和 unset ()命令显式地设置或取消设置变量</p>
+</li>
+<li><p>变量名是区分大小写的,建议只使用由字母数字字符加上 <code>_ </code>和<code>-</code>组成的名称</p>
+</li>
+<li><p>根据作用于范围, 变量的类型有normal, cache, or environment variable</p>
+</li>
+</ol>
+<h3 id="变量作用范围"><a href="#变量作用范围" class="headerlink" title="变量作用范围"></a>变量作用范围</h3><p>参考这篇文章<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_39732534/article/details/110658282">cmake cache变量_反复研究好几遍，我才发现关于 CMake 变量还可以这样理解！_weixin_39732534的博客-CSDN博客</a> 可以更好的理解cmake 变量及其作用域范围。</p>
+<h4 id="函数作用域"><a href="#函数作用域" class="headerlink" title="函数作用域"></a>函数作用域</h4><p>cmake  通过 <a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/command/function.html#command:function" title="function"><code>function()</code></a>命令来定义函数。在函数作用域通过<code>set</code>定义的变量，只在函数作用域内有效，函数返回后，该变量失效。</p>
+<p>但是通过<code>set</code>命令指定 <code>PARENT_SCOPE</code>,可以设置函数上级作用域内的变量。</p>
+<h4 id="CMake-文件中"><a href="#CMake-文件中" class="headerlink" title="CMake 文件中"></a>CMake 文件中</h4><p>每个CMakeLists.txt 和 <code>xx.cmake</code>文件中都定义一个作用域。上级CMakeLists.txt文件中定义的变量，会传递给下级的CMakeLists.txt文件中。</p>
+<p>不在函数用通过<code>set</code>和<code>unset</code>命令设置的变量，作用范围在当前的文件中。</p>
+<p>修改当前CMakeLists.txt文件中定义的变量，在上级CMakeLists.txt文件中不生效，但是通过<code>set</code>命令指定 <code>PARENT_SCOPE</code>,可以修改上级作用域内的变量。</p>
+<h4 id="cache-中"><a href="#cache-中" class="headerlink" title="cache 中"></a>cache 中</h4><p>cache 变量存被保存在<code>CMakeCache.txt</code>文件中。全局变量，多个构建构建中持续生效。</p>
+<p>只能通过set命令，指定<code>CACHE</code>选项来显示修改。</p>
+<h4 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h4><p>类似于普通变量，但是作用范围是全局，不会被缓存。</p>
+<p>变量引用的格式为 $ENV { &lt; Variable &gt; }</p>
+<p>CMake 环境变量的初始值是调用进程的初始值。可以使用 set ()和 unset ()命令更改值。这些命令只影响正在运行的 CMake 进程，而不影响整个系统环境。更改后的值不会写回调用进程，后续的构建或测试进程也不会看到它们。</p>
+<h3 id="变量求值的顺序："><a href="#变量求值的顺序：" class="headerlink" title="变量求值的顺序："></a>变量求值的顺序：</h3><ol>
+<li><p>当前函数内查找</p>
+</li>
+<li><p>当前文件中查找</p>
+</li>
+<li><p>缓存中查找</p>
+</li>
+<li><p>最后没找到，计为空字符串。</p>
+</li>
+<li><p>可以通过<code>$CACHE&#123;VAR&#125;</code>跳过前面的过程，直接从缓存中查找。</p>
+</li>
+</ol>
+<h3 id="set-给变量赋值"><a href="#set-给变量赋值" class="headerlink" title="set 给变量赋值"></a>set 给变量赋值</h3><h4 id="normal-变量"><a href="#normal-变量" class="headerlink" title="normal 变量"></a>normal 变量</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set(&lt;variable&gt; &lt;value&gt;... [PARENT_SCOPE])</span><br></pre></td></tr></table></figure>
+
+<p>如果指定了PARENT_SCOPE，修改会在上级作用域内生效。</p>
+<h4 id="Set-Cache-Entry"><a href="#Set-Cache-Entry" class="headerlink" title="Set Cache Entry"></a>Set Cache Entry</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set(&lt;variable&gt; &lt;value&gt;... CACHE &lt;type&gt; &lt;docstring&gt; [FORCE])</span><br></pre></td></tr></table></figure>
+
+<p>不加FORCE，修改不会覆盖之前cache中的值。 FORCE 选项覆盖现有条目。</p>
+<p>type的类型必须指定为以下一种：</p>
+<ol>
+<li><p>BOOL</p>
+</li>
+<li><p>FILEPATH</p>
+</li>
+<li><p>PATH</p>
+</li>
+<li><p>STRING</p>
+</li>
+<li><p>INTERNAL</p>
+</li>
+</ol>
+<blockquote>
+<p>也可以通过cmake命令，通过<code>-D&lt;var&gt;=&lt;value&gt;</code>添加缓存条目。</p>
+</blockquote>
+<h4 id="环境变量-1"><a href="#环境变量-1" class="headerlink" title="环境变量"></a>环境变量</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set(ENV&#123;&lt;variable&gt;&#125; [&lt;value&gt;])</span><br></pre></td></tr></table></figure>
+
+<p>设置给定值的环境变量，<code>$ENV&#123;&lt;variable&gt;&#125;</code>的后续调用将返回这个新值。</p>
+<p>此命令只影响当前的 CMake 进程，而不影响调用 CMake 的进程，也不影响整个系统环境，也不影响后续构建或测试流程的环境。</p>
+<p>如果在 <code>ENV &#123; &lt; variable &gt; &#125;</code>之后没有给出参数，或者如果 <code>&lt; value &gt;</code> 是一个空字符串，那么这个命令将清除任何已存在的环境变量</p>
+<h2 id="list-变量"><a href="#list-变量" class="headerlink" title="list 变量"></a>list 变量</h2><blockquote>
+<p>Note A list in cmake is a <code>;</code> separated group of strings. To create a list the set command can be used. For example, <code>set(var a b c d e)</code> creates a list with <code>a;b;c;d;e</code>, and <code>set(var &quot;a b c d e&quot;)</code> creates a string or a list with one item in it. (Note macro arguments are not variables, and therefore cannot be used in LIST commands.)</p>
+</blockquote>
+<p>列表不应该用于复杂的数据处理任务，常常用来保存源文件列表。</p>
+<p>大多数构造列表的命令不会转义; 列表元素中的字符，因此将嵌套列表展开:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">set(srcs a.c b.c c.c) # sets &quot;srcs&quot; to &quot;a.c;b.c;c.c&quot;</span><br><span class="line">set(x a &quot;b;c&quot;) # sets &quot;x&quot; to &quot;a;b;c&quot;, not &quot;a;b\;c&quot;</span><br><span class="line">set(var &quot;a b c d e&quot;) # sets var to &quot;a b c d e&quot;</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/command/list.html">list</a>操作，就是一些增删查改</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Reading</span><br><span class="line">  list(LENGTH &lt;list&gt; &lt;out-var&gt;)</span><br><span class="line">  list(GET &lt;list&gt; &lt;element index&gt; [&lt;index&gt; ...] &lt;out-var&gt;)</span><br><span class="line">  list(JOIN &lt;list&gt; &lt;glue&gt; &lt;out-var&gt;)</span><br><span class="line">  list(SUBLIST &lt;list&gt; &lt;begin&gt; &lt;length&gt; &lt;out-var&gt;)</span><br><span class="line"></span><br><span class="line">Search</span><br><span class="line">  list(FIND &lt;list&gt; &lt;value&gt; &lt;out-var&gt;)</span><br><span class="line"></span><br><span class="line">Modification</span><br><span class="line">  list(APPEND &lt;list&gt; [&lt;element&gt;...])</span><br><span class="line">  list(FILTER &lt;list&gt; &#123;INCLUDE | EXCLUDE&#125; REGEX &lt;regex&gt;)</span><br><span class="line">  list(INSERT &lt;list&gt; &lt;index&gt; [&lt;element&gt;...])</span><br><span class="line">  list(POP_BACK &lt;list&gt; [&lt;out-var&gt;...])</span><br><span class="line">  list(POP_FRONT &lt;list&gt; [&lt;out-var&gt;...])</span><br><span class="line">  list(PREPEND &lt;list&gt; [&lt;element&gt;...])</span><br><span class="line">  list(REMOVE_ITEM &lt;list&gt; &lt;value&gt;...)</span><br><span class="line">  list(REMOVE_AT &lt;list&gt; &lt;index&gt;...)</span><br><span class="line">  list(REMOVE_DUPLICATES &lt;list&gt;)</span><br><span class="line">  list(TRANSFORM &lt;list&gt; &lt;ACTION&gt; [...])</span><br><span class="line"></span><br><span class="line">Ordering</span><br><span class="line">  list(REVERSE &lt;list&gt;)</span><br><span class="line">  list(SORT &lt;list&gt; [...])</span><br></pre></td></tr></table></figure>
+
+<h1 id="file-命令"><a href="#file-命令" class="headerlink" title="file 命令"></a><a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/command/file.html">file 命令</a></h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">Reading</span><br><span class="line">  file(READ &lt;filename&gt; &lt;out-var&gt; [...])</span><br><span class="line">  file(STRINGS &lt;filename&gt; &lt;out-var&gt; [...])</span><br><span class="line">  file(&lt;HASH&gt; &lt;filename&gt; &lt;out-var&gt;)</span><br><span class="line">  file(TIMESTAMP &lt;filename&gt; &lt;out-var&gt; [...])</span><br><span class="line">  file(GET_RUNTIME_DEPENDENCIES [...])</span><br><span class="line"></span><br><span class="line">Writing</span><br><span class="line">  file(&#123;WRITE | APPEND&#125; &lt;filename&gt; &lt;content&gt;...)</span><br><span class="line">  file(&#123;TOUCH | TOUCH_NOCREATE&#125; [&lt;file&gt;...])</span><br><span class="line">  file(GENERATE OUTPUT &lt;output-file&gt; [...])</span><br><span class="line">  file(CONFIGURE OUTPUT &lt;output-file&gt; CONTENT &lt;content&gt; [...])</span><br><span class="line"></span><br><span class="line">Filesystem</span><br><span class="line">  file(&#123;GLOB | GLOB_RECURSE&#125; &lt;out-var&gt; [...] [&lt;globbing-expr&gt;...])</span><br><span class="line">  file(MAKE_DIRECTORY [&lt;dir&gt;...])</span><br><span class="line">  file(&#123;REMOVE | REMOVE_RECURSE &#125; [&lt;files&gt;...])</span><br><span class="line">  file(RENAME &lt;oldname&gt; &lt;newname&gt; [...])</span><br><span class="line">  file(COPY_FILE &lt;oldname&gt; &lt;newname&gt; [...])</span><br><span class="line">  file(&#123;COPY | INSTALL&#125; &lt;file&gt;... DESTINATION &lt;dir&gt; [...])</span><br><span class="line">  file(SIZE &lt;filename&gt; &lt;out-var&gt;)</span><br><span class="line">  file(READ_SYMLINK &lt;linkname&gt; &lt;out-var&gt;)</span><br><span class="line">  file(CREATE_LINK &lt;original&gt; &lt;linkname&gt; [...])</span><br><span class="line">  file(CHMOD &lt;files&gt;... &lt;directories&gt;... PERMISSIONS &lt;permissions&gt;... [...])</span><br><span class="line">  file(CHMOD_RECURSE &lt;files&gt;... &lt;directories&gt;... PERMISSIONS &lt;permissions&gt;... [...])</span><br><span class="line"></span><br><span class="line">Path Conversion</span><br><span class="line">  file(REAL_PATH &lt;path&gt; &lt;out-var&gt; [BASE_DIRECTORY &lt;dir&gt;] [EXPAND_TILDE])</span><br><span class="line">  file(RELATIVE_PATH &lt;out-var&gt; &lt;directory&gt; &lt;file&gt;)</span><br><span class="line">  file(&#123;TO_CMAKE_PATH | TO_NATIVE_PATH&#125; &lt;path&gt; &lt;out-var&gt;)</span><br><span class="line"></span><br><span class="line">Transfer</span><br><span class="line">  file(DOWNLOAD &lt;url&gt; [&lt;file&gt;] [...])</span><br><span class="line">  file(UPLOAD &lt;file&gt; &lt;url&gt; [...])</span><br><span class="line"></span><br><span class="line">Locking</span><br><span class="line">  file(LOCK &lt;path&gt; [...])</span><br><span class="line"></span><br><span class="line">Archiving</span><br><span class="line">  file(ARCHIVE_CREATE OUTPUT &lt;archive&gt; PATHS &lt;paths&gt;... [...])</span><br><span class="line">  file(ARCHIVE_EXTRACT INPUT &lt;archive&gt; [...])</span><br></pre></td></tr></table></figure>
+
+<h2 id="Filesystem"><a href="#Filesystem" class="headerlink" title="Filesystem"></a>Filesystem</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">file(GLOB &lt;variable&gt;</span><br><span class="line">     [LIST_DIRECTORIES true|false] [RELATIVE &lt;path&gt;] [CONFIGURE_DEPENDS]</span><br><span class="line">     [&lt;globbing-expressions&gt;...])</span><br><span class="line">file(GLOB_RECURSE &lt;variable&gt; [FOLLOW_SYMLINKS]</span><br><span class="line">     [LIST_DIRECTORIES true|false] [RELATIVE &lt;path&gt;] [CONFIGURE_DEPENDS]</span><br><span class="line">     [&lt;globbing-expressions&gt;...])</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Generate a list of files that match the <code>&lt;globbing-expressions&gt;</code> and store it into the <code>&lt;variable&gt;</code>. Globbing expressions are similar to regular expressions, but much simpler. If <code>RELATIVE</code> flag is specified, the results will be returned as relative paths to the given path.</p>
+<p>On Windows and macOS, globbing is case-insensitive even if the underlying filesystem is case-sensitive (both filenames and globbing expressions are converted to lowercase before matching). On other platforms, globbing is case-sensitive</p>
+<p>By default <code>GLOB</code> lists directories - directories are omitted in result if <code>LIST_DIRECTORIES</code> is set to false.</p>
+</blockquote>
+<p>Examples of globbing expressions include:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">*.cxx      - match all files with extension cxx</span><br><span class="line">*.vt?      - match all files with extension vta,...,vtz</span><br><span class="line">f[3-5].txt - match files f3.txt, f4.txt, f5.txt</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>The <code>GLOB_RECURSE</code> mode will traverse all the subdirectories of the matched directory and match the files.</p>
+</blockquote>
+<h1 id="cmake-执行shell命令"><a href="#cmake-执行shell命令" class="headerlink" title="cmake 执行shell命令"></a>cmake 执行shell命令</h1><p>通过 execute_process  可以执行调用shell 命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">execute_process(COMMAND &lt;cmd1&gt; [&lt;arguments&gt;]</span><br><span class="line">                [COMMAND &lt;cmd2&gt; [&lt;arguments&gt;]]...</span><br><span class="line">                [WORKING_DIRECTORY &lt;directory&gt;]</span><br><span class="line">                [TIMEOUT &lt;seconds&gt;]</span><br><span class="line">                [RESULT_VARIABLE &lt;variable&gt;]</span><br><span class="line">                [RESULTS_VARIABLE &lt;variable&gt;]</span><br><span class="line">                [OUTPUT_VARIABLE &lt;variable&gt;]</span><br><span class="line">                [ERROR_VARIABLE &lt;variable&gt;]</span><br><span class="line">                [INPUT_FILE &lt;file&gt;]</span><br><span class="line">                [OUTPUT_FILE &lt;file&gt;]</span><br><span class="line">                [ERROR_FILE &lt;file&gt;]</span><br><span class="line">                [OUTPUT_QUIET]</span><br><span class="line">                [ERROR_QUIET]</span><br><span class="line">                [COMMAND_ECHO &lt;where&gt;]</span><br><span class="line">                [OUTPUT_STRIP_TRAILING_WHITESPACE]</span><br><span class="line">                [ERROR_STRIP_TRAILING_WHITESPACE]</span><br><span class="line">                [ENCODING &lt;name&gt;]</span><br><span class="line">                [ECHO_OUTPUT_VARIABLE]</span><br><span class="line">                [ECHO_ERROR_VARIABLE]</span><br><span class="line">                [COMMAND_ERROR_IS_FATAL &lt;ANY|LAST&gt;])</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yxibng.github.io">yxibng</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yxibng.github.io/2022/03/17/cmake/2022-03-17-cmake%20%E5%85%A5%E9%97%A8/">https://yxibng.github.io/2022/03/17/cmake/2022-03-17-cmake%20%E5%85%A5%E9%97%A8/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://yxibng.github.io" target="_blank">yxibng</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/cmake/">cmake</a></div><div class="post-share"><div class="social-share" data-image="https://github.com/yxibng.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2022/03/19/c++/2022-03-19-pragma%20once%20%E7%94%A8%E6%B3%95%E6%80%BB%E7%BB%93/" title="#pragma once 用法总结"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">#pragma once 用法总结</div></div><div class="info-2"><div class="info-item-1">pragma once 用法总结pragma once 这个宏有什么用？为了避免同一个头文件被包含（include）多次，C&#x2F;C++中有两种宏实现方式：一种是#ifndef方式；另一种是#pragma once方式。 在能够支持这两种方式的编译器上，二者并没有太大的区别。但两者仍然有一些细微的区别。 两者的使用方式有何区别？方式1： 1234#ifndef  __SOMEFILE_H__#define   __SOMEFILE_H__ ... ... // 声明、定义语句#endif  方式2： 12#pragma once ... ... // 声明、定义语句  两者各有和特点？#ifndef #ifndef的方式受C&#x2F;C++语言标准支持  通过宏来检测，宏的范围可以是单个文件，也可以是代码片段。保证文件或者代码片段不被重复包含，针对文件的内容。  可能会发生宏冲突，导致你看到头文件明明存在，但编译器却硬说找不到声明的状况（遇到过一次，查了一晚上）   #pragma once pragma once由编译器提供保证：同一个文件不会被包含多次。注意这里所说的...</div></div></div></a><a class="pagination-related" href="/2022/03/15/ffmpeg/2022-03-15-ffplay-frame%20queue%20%E5%88%86%E6%9E%90/" title="ffplay frame queue 分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">ffplay frame queue 分析</div></div><div class="info-2"><div class="info-item-1">参考：  ffplay frame queue分析 FrameQueue数据结构ffplay 定义了 FrameQueue 来管理解码后的音频，视频以及字幕。 12345678910111213141516171819202122232425262728/* Common struct for handling all types of decoded data and allocated render buffers. */typedef struct Frame &#123;    AVFrame *frame;       //audio/video frame    AVSubtitle sub;       //字幕    int serial;           //序列号    double pts;           /* presentation timestamp for the frame */    double duration;      /* estimated duration of the frame */    int64_t pos;  ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2024/04/03/cmake/2024-04-03-cmake-ios-code-sign/" title="CMake ios code signing"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-03</div><div class="info-item-2">CMake ios code signing</div></div><div class="info-2"><div class="info-item-1">Error MessageWhen I build soundtouch for ios, met following error 12error: Bundle identifier is missing. soundstretch doesn&#x27;t have a bundle identifier. Add a value for PRODUCT_BUNDLE_IDENTIFIER in the build settings editor. (in target &#x27;soundstretch&#x27; from project &#x27;SoundTouch&#x27;)note: Run script build phase &#x27;Generate CMakeFiles/ALL_BUILD&#x27; will be run during every build because the option to run the script phase &quot;Based on dependency analysis&quot; is uncheck...</div></div></div></a><a class="pagination-related" href="/2022/10/23/cmake/2022-10-23-cmake%20add_custom_command/" title="cmake add_custom_command"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-10-23</div><div class="info-item-2">cmake add_custom_command</div></div><div class="info-2"><div class="info-item-1">目的： 添加自定义的构建规则到生成的构建系统中。 有两种用法：  使用外部命令来产生一个输出, 例如生成文件 监听一个target的构建事件，在target构建前或者构建后，执行命令  Examples: Generating Files添加命令，执行后生成源文件 1234567add_custom_command(  OUTPUT out.c  COMMAND someTool -i $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/in.txt                   -o out.c  DEPENDS $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/in.txt  VERBATIM)add_library(myLib out.c)  通过生成器表达式，为每个config指定不同的输出 12345678add_custom_command(  OUTPUT &quot;out-$&lt;CONFIG&gt;.c&quot;  COMMAND someTool -i $&#123;CMAKE_CURRENT_SO...</div></div></div></a><a class="pagination-related" href="/2022/03/13/cmake/2022-03-13-cmake%20find_package/" title="cmake find_package"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-13</div><div class="info-item-2">cmake find_package</div></div><div class="info-2"><div class="info-item-1">参考：  官方文档  find_package  Cmake之深入理解find_package()的用法   使用通过find_package命令，可以找到三方库对应的头文件路径和库文件路径，不用手动管理这些路径了。例如要引用CURL库，在CMakeLists文件可以简单写成下面的形式 12345678find_package(CURL)add_executable(curltest curltest.cc)if(CURL_FOUND)    target_include_directories(clib PRIVATE $&#123;CURL_INCLUDE_DIR&#125;)    target_link_libraries(curltest $&#123;CURL_LIBRARY&#125;)else(CURL_FOUND)    message(FATAL_ERROR ”CURL library not found”)endif(CURL_FOUND)  原理find_package 有两种搜索模式 Module mode在CMAKE_MODULE_PATH指定的路径下...</div></div></div></a><a class="pagination-related" href="/2022/10/24/cmake/2022-10-24-cmake%20Importing%20and%20Exporting%20Guide/" title="cmake Importing and Exporting Guide"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-10-24</div><div class="info-item-2">cmake Importing and Exporting Guide</div></div><div class="info-2"><div class="info-item-1">参考：https://cmake.org/cmake/help/latest/guide/importing-exporting/index.html  ImportingIMPORTED targets 将cmake工程外部的库，可执行文件引入到当前的cmake工程中，被引入的内容会关联到一个cmake 中一个逻辑上的target。 创建方式，调用add_executable(),add_library()命令创建target， 但是要添加IMPORTED参数。 这个IMPORTED target不产生任何构建文件，因为他们引入的都是现成的库或者可执行文件。 一旦IMPORTED target 被创建好了，就可以像工程中的其他target一样被引用了。 通过这种方式，就可以方便，灵活引用外部可执行文件和库了。 Importing Executables使用磁盘上的可执行文件。 12345add_executable(myexe IMPORTED)set_property(TARGET myexe PROPERTY             IMPORTED_LOCATION &q...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">yxibng</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yxibng" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%BB%84%E7%BB%87"><span class="toc-number">1.</span> <span class="toc-text">文件组织</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Directories-%E7%9B%AE%E5%BD%95"><span class="toc-number">1.0.1.</span> <span class="toc-text">Directories 目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Scripts-%E8%84%9A%E6%9C%AC"><span class="toc-number">1.0.2.</span> <span class="toc-text">Scripts 脚本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Modules-%E6%A8%A1%E5%9D%97"><span class="toc-number">1.0.3.</span> <span class="toc-text">Modules 模块</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#cmake-%E5%8F%98%E9%87%8F"><span class="toc-number">2.</span> <span class="toc-text">cmake 变量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E4%BD%9C%E7%94%A8%E8%8C%83%E5%9B%B4"><span class="toc-number">2.0.1.</span> <span class="toc-text">变量作用范围</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="toc-number">2.0.1.1.</span> <span class="toc-text">函数作用域</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CMake-%E6%96%87%E4%BB%B6%E4%B8%AD"><span class="toc-number">2.0.1.2.</span> <span class="toc-text">CMake 文件中</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#cache-%E4%B8%AD"><span class="toc-number">2.0.1.3.</span> <span class="toc-text">cache 中</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="toc-number">2.0.1.4.</span> <span class="toc-text">环境变量</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E6%B1%82%E5%80%BC%E7%9A%84%E9%A1%BA%E5%BA%8F%EF%BC%9A"><span class="toc-number">2.0.2.</span> <span class="toc-text">变量求值的顺序：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#set-%E7%BB%99%E5%8F%98%E9%87%8F%E8%B5%8B%E5%80%BC"><span class="toc-number">2.0.3.</span> <span class="toc-text">set 给变量赋值</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#normal-%E5%8F%98%E9%87%8F"><span class="toc-number">2.0.3.1.</span> <span class="toc-text">normal 变量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Set-Cache-Entry"><span class="toc-number">2.0.3.2.</span> <span class="toc-text">Set Cache Entry</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F-1"><span class="toc-number">2.0.3.3.</span> <span class="toc-text">环境变量</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#list-%E5%8F%98%E9%87%8F"><span class="toc-number">2.1.</span> <span class="toc-text">list 变量</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#file-%E5%91%BD%E4%BB%A4"><span class="toc-number">3.</span> <span class="toc-text">file 命令</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Filesystem"><span class="toc-number">3.1.</span> <span class="toc-text">Filesystem</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#cmake-%E6%89%A7%E8%A1%8Cshell%E5%91%BD%E4%BB%A4"><span class="toc-number">4.</span> <span class="toc-text">cmake 执行shell命令</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/16/%E5%BE%AE%E4%BF%A1%20xlog%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="无标题">无标题</a><time datetime="2026-04-16T14:24:32.737Z" title="发表于 2026-04-16 22:24:32">2026-04-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/04/03/cmake/2024-04-03-cmake-ios-code-sign/" title="CMake ios code signing">CMake ios code signing</a><time datetime="2024-04-02T16:00:00.000Z" title="发表于 2024-04-03 00:00:00">2024-04-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/18/ios/2024-03-18-ios-xib/" title="ios xib 总结">ios xib 总结</a><time datetime="2024-03-17T16:00:00.000Z" title="发表于 2024-03-18 00:00:00">2024-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/08/debug-xlog-osx/" title="Xcode 源码调试微信 xlog">Xcode 源码调试微信 xlog</a><time datetime="2024-03-07T16:00:00.000Z" title="发表于 2024-03-08 00:00:00">2024-03-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/06/09/c++/2023-06-09-%E4%BD%8D%E5%9F%9F%20%E9%AB%98%E4%BD%8E%E4%BD%8D/" title="结构体位域中的高低位问题">结构体位域中的高低位问题</a><time datetime="2023-06-08T16:00:00.000Z" title="发表于 2023-06-09 00:00:00">2023-06-09</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2022 - 2026 By yxibng</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script src="js/local-search-fix.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="输入关键词搜索..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>

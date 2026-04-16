@@ -1,0 +1,273 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>yxibng</title><meta name="author" content="yxibng"><meta name="copyright" content="yxibng"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta property="og:type" content="website">
+<meta property="og:title" content="yxibng">
+<meta property="og:url" content="https://yxibng.github.io/page/2/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/yxibng.png">
+<meta property="article:author" content="yxibng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/yxibng.png"><script type="application/ld+json"></script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yxibng.github.io/page/2/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'yxibng',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'home'
+}</script><meta name="generator" content="Hexo 7.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">yxibng</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="site-info"><h1 id="site-title">yxibng</h1><div id="site-subtitle"><span id="subtitle"></span></div><div id="site_social_icons"><a class="social-icon" href="https://github.com/yxibng" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts nc" id="recent-posts"><div class="recent-post-items"><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2022/12/21/2022-12-21-rbenv/" title="用 rbenv 来安装ruby">用 rbenv 来安装ruby</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-12-20T16:00:00.000Z" title="发表于 2022-12-21 00:00:00">2022-12-21</time></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/ruby/">ruby</a></span></div><div class="content">参考： rbenv 1234567891011# Install Homebrew/bin/bash -c &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&quot;# Install rbenv and ruby-buildbrew install rbenv# Set up rbenv integration with your shellrbenv init# Check your installationcurl -fsSL https://github.com/rbenv/rbenv-installer/raw/main/bin/rbenv-doctor | bash  配置 .zshrc 12# rbenveval &quot;$(rbenv init - zsh)&quot;  Restart your terminal to apply your changes. Next, you can install the Ruby version...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2022/11/26/ios/2022-11-26-ios%20keychain%20%E6%80%BB%E7%BB%93/" title="ios keychain 总结">ios keychain 总结</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-11-25T16:00:00.000Z" title="发表于 2022-11-26 00:00:00">2022-11-26</time></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/iOS/">iOS</a></span></div><div class="content">Keychain  是什么一个加密的数据库， 可以用来存储小的用户数据， 包括  kSecClassGenericPassword：通用密码（可以用来存自定义数据） kSecClassInternetPassword：互联网密码 kSecClassCertificate：证书 kSecClassKey：秘钥 kSecClassIdentity：证书+秘钥  Figure 1 Securing the user’s secrets in a keychain 打开 mac 系统的 keychain 观察一下， 发现系统有多个keychain，每个keychain都有上图对应的项目 如何管理数据，增删查改Figure 1 Putting data and attributes into a keychain keychain 将要存储的数据封装为 SecKeychainItemRef，通过存取 SecKeychainItem 来达到对数据的管理。 SecKeychainItemRef 包含  data， CFData， 要存取的数据 attributes, 该条目的属性，存取权限，查...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2022/11/16/Shell/2022-11-16-%E5%91%BD%E4%BB%A4%E8%A1%8C%E9%87%8D%E5%90%AFiPhone/" title="命令行重启iPhone">命令行重启iPhone</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-11-15T16:00:00.000Z" title="发表于 2022-11-16 00:00:00">2022-11-16</time></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Shell/">Shell</a></span></div><div class="content">参考： Any way to reboot a iDevice that is connected to a USB port via terminal (Mac terminal)? 安装libimobiledevice 12brew install libimobiledevice 使用 1idevicediagnostics restart </div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2022/10/29/c++/2022-10-29-Xcode%20%E9%85%8D%E7%BD%AE%20clang-format%20%E6%A0%BC%E5%BC%8F%E5%8C%96%20c++%20%E4%BB%A3%E7%A0%81/" title="Xcode 配置 clang-format 格式化 C++代码">Xcode 配置 clang-format 格式化 C++代码</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-10-28T16:00:00.000Z" title="发表于 2022-10-29 00:00:00">2022-10-29</time></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/c/">c++</a></span></div><div class="content">在命令行，通过clang-format工具，可以对代码进行格式化。但 clang-fromat 只能在终端中使用，有没有什么办法可以让它在Xcode中也可以使用呢，这样就很方便的对当前文档进行格式化了。 答案是： 借助 macOS 自带的 Automator 工具。 clang-format 安装1brew install clang-format  添加 Automator 服务打开 Automator 选择  “Quick Action”。 左侧 Library 中搜索 “Run Shell Script” 并拖动到右侧。在脚本编辑框中输入以下内容： 12source ~/.zshrcclang-format  同时记得勾选上 “Output replaces selected text”，然后保存并输入保存的名称，比如 clang-format。 至此一个服务便已添加好。 Automator 在磁盘上的位置The location of the user created services is under: 1~/Library/Services/  other locat...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2022/10/24/cmake/2022-10-24-cmake%20Importing%20and%20Exporting%20Guide/" title="cmake Importing and Exporting Guide">cmake Importing and Exporting Guide</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-10-23T16:00:00.000Z" title="发表于 2022-10-24 00:00:00">2022-10-24</time></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/cmake/">cmake</a></span></div><div class="content">参考：https://cmake.org/cmake/help/latest/guide/importing-exporting/index.html  ImportingIMPORTED targets 将cmake工程外部的库，可执行文件引入到当前的cmake工程中，被引入的内容会关联到一个cmake 中一个逻辑上的target。 创建方式，调用add_executable(),add_library()命令创建target， 但是要添加IMPORTED参数。 这个IMPORTED target不产生任何构建文件，因为他们引入的都是现成的库或者可执行文件。 一旦IMPORTED target 被创建好了，就可以像工程中的其他target一样被引用了。 通过这种方式，就可以方便，灵活引用外部可执行文件和库了。 Importing Executables使用磁盘上的可执行文件。 12345add_executable(myexe IMPORTED)set_property(TARGET myexe PROPERTY             IMPORTED_LOCATION &q...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2022/10/23/cmake/2022-10-23-cmake%20add_custom_command/" title="cmake add_custom_command">cmake add_custom_command</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-10-22T16:00:00.000Z" title="发表于 2022-10-23 00:00:00">2022-10-23</time></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/cmake/">cmake</a></span></div><div class="content">目的： 添加自定义的构建规则到生成的构建系统中。 有两种用法：  使用外部命令来产生一个输出, 例如生成文件 监听一个target的构建事件，在target构建前或者构建后，执行命令  Examples: Generating Files添加命令，执行后生成源文件 1234567add_custom_command(  OUTPUT out.c  COMMAND someTool -i $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/in.txt                   -o out.c  DEPENDS $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/in.txt  VERBATIM)add_library(myLib out.c)  通过生成器表达式，为每个config指定不同的输出 12345678add_custom_command(  OUTPUT &quot;out-$&lt;CONFIG&gt;.c&quot;  COMMAND someTool -i $&#123;CMAKE_CURRENT_SO...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2022/10/13/hls/2022-10-13-HLS-%E4%BB%8B%E7%BB%8D/" title="HLS 介绍，M3U8 格式分析">HLS 介绍，M3U8 格式分析</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-10-12T16:00:00.000Z" title="发表于 2022-10-13 00:00:00">2022-10-13</time></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/hls-m3u8/">hls,m3u8</a></span></div><div class="content">HLS 是什么维基百科的介绍： HTTP Live Streaming，缩写为HLS，是由苹果公司提出基于HTTP的流媒体网络传输协议。是苹果公司QuickTime X和iPhone软件系统的一部分。它的工作原理是把整个流分成一个个小的基于HTTP的文件来下载，每次只下载一些。当媒体流正在播放时，客户端可以选择从许多不同的备用源中以不同的速率下载同样的资源，允许流媒体会话适应不同的数据速率。在开始一个流媒体会话时，客户端会下载一个包含元数据的扩充 M3U (m3u8) 播放列表文件，用于寻找可用的媒体流。 HLS只请求基本的HTTP报文，与实时传输协议（RTP）不同，HLS可以穿过任何允许HTTP数据通过的防火墙或者代理服务器。它也很容易使用内容分发网络来传输媒体流。 苹果公司把HLS协议作为一个互联网草案（逐步提交），在第一阶段中已作为一个非正式的标准提交到IETF。2017年8月，RFC 8216发布，描述了HLS协议第7版的定义。 苹果自己的介绍：  Send live and on‐demand audio and video to iPhone, iPad, Mac, ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2022/10/12/hls/2022-10-12-MPEG-TS%20%E6%A0%BC%E5%BC%8F%E5%88%86%E6%9E%90/" title="MPEG-TS 格式分析">MPEG-TS 格式分析</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-10-11T16:00:00.000Z" title="发表于 2022-10-12 00:00:00">2022-10-12</time></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/hls/">hls</a></span></div><div class="content">参考：MPEG-TS 格式解析 An introduction to MPEG-TS 背景介绍MPEG-TS一种标准数据容器格式，传输与存储音视频、节目与系统信息协议数据，应用于数字广播系统，譬如DVB,ATSC与IPTV。传输流在MPEG-2第1部分系统中规定，正式称为ISO &#x2F; IEC标准13818-1或ITU-T建议书[1]。 MPEG2&#x2F;DVB是一种多媒体传输、复用技术，在数字电视广播中可提供数百个节目频道。复用的含义是，可以同时传输多层节目。 注意，DVB全称为Digital Video Broadcasting，包括不同的系统，如卫星数字电视广播系统，有线数字电视广播系统，地面开路数字电视广播系统，交互式数字电视广播系统以及数字电视加扰系统。DVB系统标准是一种全球数字电视技术的标准。如何定义广播中的比特流语法与句法，以实现在比特流中复用数字音频与视频，欧洲的DVB采用数字视频压缩MPEG-2标准，该标准是定义比特流的语法与句法的一个ISO&#x2F;IEC标准，即13818-1标准。DVB系统的核心技术是采用MPEG-2技术进行视频、音频的编码，...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2022/09/23/aac/2022-09-23-aac-adts/" title="aac adts 格式分析">aac adts 格式分析</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-09-22T16:00:00.000Z" title="发表于 2022-09-23 00:00:00">2022-09-23</time></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/aac/">aac</a></span></div><div class="content">AAC音频格式在MPEG-2（ISO-13318-7 2003）中有定义。AAC后来又被采用到MPEG-4标准中。 AAC 有两种格式 ADIF(Audio Data Interchange Forma) 和 ADTS(Audio Data Transport Stream)  ADIF: ADIF只有一个统一的头，所以必须得到所有的数据后解码 ADTS: 每一帧都有头信息, 可以在任意帧解码  ADIFadif头 + 对齐字节 + 数据块 12345adif_sequence() &#123;    adif_header();    byte_alignment();    raw_data_stream();&#125; ADTS数据流是一帧一帧的adts，可以在任何位置解码。 123456adts_sequence() &#123;    while (nextbits() == syncword)     &#123;         adts_frame();    &#125; &#125; adts_frame123456789101112131415adts_f...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2022/09/23/aac/2022-09-23-fdk-aac/" title="fdk aac">fdk aac</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-09-22T16:00:00.000Z" title="发表于 2022-09-23 00:00:00">2022-09-23</time></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/aac/">aac</a></span></div><div class="content">github 地址： https://github.com/mstorsjo/fdk-aac fdk-aac 提供了跨平台的编解码 aac 的功能。 编译fdk-aac提供了CMake构建静态库和动态库。 1234567cd fdk-aacmkidr build #BUILD_SHARED_LIBS 控制构建静态库还是动态库cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFFcmake --build --config Release# installcmake --install &lt;dir&gt; --prefix &lt;prefix&gt; 文档在documentation目录下，有两个pdf文件，分别对应编码和解码相关的文档。 12aacDecoder.pdfaacEncoder.pdf  demofdk-aac 提供一个编码的示例aac-enc.c， 主要介绍如何实现aac 编码功能该demo 可以通过cmake来调试。首先在cmake 中启用该程序，给cmake 传递参数-DBUILD_PROGR...</div></div></div></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/"><i class="fas fa-chevron-left fa-fw"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/#content-inner">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/#content-inner">5</a><a class="extend next" rel="next" href="/page/3/#content-inner"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">yxibng</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yxibng" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/16/%E5%BE%AE%E4%BF%A1%20xlog%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="无标题">无标题</a><time datetime="2026-04-16T14:24:32.737Z" title="发表于 2026-04-16 22:24:32">2026-04-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/04/03/cmake/2024-04-03-cmake-ios-code-sign/" title="CMake ios code signing">CMake ios code signing</a><time datetime="2024-04-02T16:00:00.000Z" title="发表于 2024-04-03 00:00:00">2024-04-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/18/ios/2024-03-18-ios-xib/" title="ios xib 总结">ios xib 总结</a><time datetime="2024-03-17T16:00:00.000Z" title="发表于 2024-03-18 00:00:00">2024-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/08/debug-xlog-osx/" title="Xcode 源码调试微信 xlog">Xcode 源码调试微信 xlog</a><time datetime="2024-03-07T16:00:00.000Z" title="发表于 2024-03-08 00:00:00">2024-03-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/06/09/c++/2023-06-09-%E4%BD%8D%E5%9F%9F%20%E9%AB%98%E4%BD%8E%E4%BD%8D/" title="结构体位域中的高低位问题">结构体位域中的高低位问题</a><time datetime="2023-06-08T16:00:00.000Z" title="发表于 2023-06-09 00:00:00">2023-06-09</time></div></div></div></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/Shell/" style="font-size: 1.43em; color: #99a6b9">Shell</a> <a href="/tags/cmake/" style="font-size: 1.37em; color: #99a4b2">cmake</a> <a href="/tags/lldb/" style="font-size: 1.1em; color: #999">lldb</a> <a href="/tags/c/" style="font-size: 1.3em; color: #99a1ac">c++</a> <a href="/tags/hls/" style="font-size: 1.1em; color: #999">hls</a> <a href="/tags/aac/" style="font-size: 1.17em; color: #999c9f">aac</a> <a href="/tags/webrtc/" style="font-size: 1.1em; color: #999">webrtc</a> <a href="/tags/shell/" style="font-size: 1.1em; color: #999">shell</a> <a href="/tags/iOS/" style="font-size: 1.23em; color: #999ea6">iOS</a> <a href="/tags/hls-m3u8/" style="font-size: 1.1em; color: #999">hls,m3u8</a> <a href="/tags/ruby/" style="font-size: 1.1em; color: #999">ruby</a> <a href="/tags/ffmpeg/" style="font-size: 1.5em; color: #99a9bf">ffmpeg</a></div></div><div class="card-widget card-archives">
+    <div class="item-headline">
+      <i class="fas fa-archive"></i>
+      <span>归档</span>
+      <a class="card-more-btn" href="/archives/"
+            title="查看更多">
+            <i class="fas fa-angle-right"></i>
+          </a>
+    </div>
+  
+    <ul class="card-archive-list">
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/04/">
+            <span class="card-archive-list-date">
+              四月 2026
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2024/04/">
+            <span class="card-archive-list-date">
+              四月 2024
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2024/03/">
+            <span class="card-archive-list-date">
+              三月 2024
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2023/06/">
+            <span class="card-archive-list-date">
+              六月 2023
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2023/05/">
+            <span class="card-archive-list-date">
+              五月 2023
+            </span>
+            <span class="card-archive-list-count">3</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2023/03/">
+            <span class="card-archive-list-date">
+              三月 2023
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2022/12/">
+            <span class="card-archive-list-date">
+              十二月 2022
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2022/11/">
+            <span class="card-archive-list-date">
+              十一月 2022
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+    </ul>
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站信息</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">50</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总浏览量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-04-16T14:43:52.133Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2022 - 2026 By yxibng</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>window.typedJSFn = {
+  init: str => {
+    window.typed = new Typed('#subtitle', Object.assign({
+      strings: str,
+      startDelay: 300,
+      typeSpeed: 150,
+      loop: true,
+      backSpeed: 50,
+    }, {"startDelay":300,"typeSpeed":80,"loop":true}))
+  },
+  run: subtitleType => {
+    if (true) {
+      if (typeof Typed === 'function') {
+        subtitleType()
+      } else {
+        btf.getScript('https://cdn.jsdelivr.net/npm/typed.js@3.0.0/dist/typed.umd.min.js').then(subtitleType)
+      }
+    } else {
+      subtitleType()
+    }
+  },
+  processSubtitle: (content, extraContents = []) => {
+    if (true) {
+      const sub = ["读书，学习，走遍世界"].slice()
+
+      if (extraContents.length > 0) {
+        sub.unshift(...extraContents)
+      }
+
+      if (typeof content === 'string') {
+        sub.unshift(content)
+      } else if (Array.isArray(content)) {
+        sub.unshift(...content)
+      }
+
+      sub.length > 0 && typedJSFn.init(sub)
+    } else {
+      document.getElementById('subtitle').textContent = typeof content === 'string' ? content :
+        (Array.isArray(content) && content.length > 0 ? content[0] : '')
+    }
+  }
+}
+btf.addGlobalFn('pjaxSendOnce', () => { typed.destroy() }, 'typedDestroy')
+</script><script>function subtitleType () {
+  typedJSFn.processSubtitle(["读书，学习，走遍世界"])
+}
+typedJSFn.run(subtitleType)</script></div><script src="js/local-search-fix.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="输入关键词搜索..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>

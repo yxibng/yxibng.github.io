@@ -1,0 +1,280 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>ffplay packet queue 分析 | yxibng</title><meta name="author" content="yxibng"><meta name="copyright" content="yxibng"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="参考： ffplay packet queue分析  ffplay  用 PacketQueue 来保存解封装后的数据，即AVPacket。定义MyAVPacketList表示队列中的元素，这里命名为MyAVPacketNode可能更合理。 12345678910111213141516171819202122232425typedef struct MyAVPacketList &#123;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ffplay packet queue 分析">
+<meta property="og:url" content="https://yxibng.github.io/2022/03/14/ffmpeg/2022-03-14-ffplay-packet%20queue%20%20%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:description" content="参考： ffplay packet queue分析  ffplay  用 PacketQueue 来保存解封装后的数据，即AVPacket。定义MyAVPacketList表示队列中的元素，这里命名为MyAVPacketNode可能更合理。 12345678910111213141516171819202122232425typedef struct MyAVPacketList &#123;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/yxibng.png">
+<meta property="article:published_time" content="2022-03-13T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-16T14:24:32.736Z">
+<meta property="article:author" content="yxibng">
+<meta property="article:tag" content="ffmpeg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/yxibng.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "ffplay packet queue 分析",
+  "url": "https://yxibng.github.io/2022/03/14/ffmpeg/2022-03-14-ffplay-packet%20queue%20%20%E5%88%86%E6%9E%90/",
+  "image": "https://github.com/yxibng.png",
+  "datePublished": "2022-03-13T16:00:00.000Z",
+  "dateModified": "2026-04-16T14:24:32.736Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "yxibng",
+      "url": "https://yxibng.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yxibng.github.io/2022/03/14/ffmpeg/2022-03-14-ffplay-packet%20queue%20%20%E5%88%86%E6%9E%90/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ffplay packet queue 分析',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">yxibng</span></a><a class="nav-page-title" href="/"><span class="site-name">ffplay packet queue 分析</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">ffplay packet queue 分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2022-03-13T16:00:00.000Z" title="发表于 2022-03-14 00:00:00">2022-03-14</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>参考： <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/43295650">ffplay packet queue分析</a></p>
+<hr>
+<p>ffplay  用 PacketQueue 来保存解封装后的数据，即AVPacket。<br>定义MyAVPacketList表示队列中的元素，这里命名为MyAVPacketNode可能更合理。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">MyAVPacketList</span> &#123;</span></span><br><span class="line">    <span class="comment">//待解码的数据</span></span><br><span class="line">    AVPacket *pkt;</span><br><span class="line">    <span class="comment">//pkt序列号</span></span><br><span class="line">    <span class="type">int</span> serial;</span><br><span class="line">&#125; MyAVPacketList;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">PacketQueue</span> &#123;</span></span><br><span class="line">    <span class="comment">/* ffmpeg封装的队列数据结构，先入先出 */</span></span><br><span class="line">    AVFifo *pkt_list;</span><br><span class="line">    <span class="comment">/* 当前队里的pkt的数量 */</span></span><br><span class="line">    <span class="type">int</span> nb_packets;</span><br><span class="line">    <span class="comment">/* 当前所有节点占用的总内存大小 */</span></span><br><span class="line">    <span class="type">int</span> size;</span><br><span class="line">    <span class="comment">/* 队列所有节点的合计时长 */</span></span><br><span class="line">    <span class="type">int64_t</span> duration;</span><br><span class="line">    <span class="comment">/* 是否要中止队列操作，用于安全快速退出播放 */</span></span><br><span class="line">    <span class="type">int</span> abort_request;</span><br><span class="line">    <span class="comment">//序列号，和MyAVPacketList的serial作用相同，但改变的时序稍微有点不同</span></span><br><span class="line">    <span class="type">int</span> serial;</span><br><span class="line">    <span class="comment">//用于维持PacketQueue的多线程安全(SDL_mutex可以按pthread_mutex_t理解）</span></span><br><span class="line">    SDL_mutex *mutex;</span><br><span class="line">    <span class="comment">//用于读、写线程相互通知(SDL_cond可以按pthread_cond_t理解)</span></span><br><span class="line">    SDL_cond *cond;</span><br><span class="line">&#125; PacketQueue;</span><br></pre></td></tr></table></figure>
+
+<p>结构体的第一个成员是AVFifo指针类型的。FFmpeg 定义了AVFifo结构体和操作这个结构体的一系列函数，实现了队列的数据结构。PacketQueue 是封装了AVFifo 实例，来管理MyAVPacketList，进而管理解封装后的AVPacket的。</p>
+<h2 id="AVFifo"><a href="#AVFifo" class="headerlink" title="AVFifo"></a>AVFifo</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">AVFifo</span> &#123;</span></span><br><span class="line">    <span class="type">uint8_t</span> *buffer;</span><br><span class="line"></span><br><span class="line">    <span class="type">size_t</span> elem_size, nb_elems;</span><br><span class="line">    <span class="type">size_t</span> offset_r, offset_w;</span><br><span class="line">    <span class="comment">// distinguishes the ambiguous situation offset_r == offset_w</span></span><br><span class="line">    <span class="type">int</span>    is_empty;</span><br><span class="line"></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> flags;</span><br><span class="line">    <span class="type">size_t</span>       auto_grow_limit;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>操作</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">AVFifo *av_fifo_alloc2(size_t elems, size_t elem_size,</span><br><span class="line">                       unsigned int flags);</span><br><span class="line"></span><br><span class="line">int av_fifo_write(AVFifo *f, const void *buf, size_t nb_elems);</span><br><span class="line"></span><br><span class="line">int av_fifo_read(AVFifo *f, void *buf, size_t nb_elems);</span><br><span class="line"></span><br><span class="line">void av_fifo_freep2(AVFifo **f);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>av_fifo_alloc2 创建队列</p>
+</li>
+<li><p>av_fifo_read 从队列中读一个元素，队列长度减 1</p>
+</li>
+<li><p>av_fifo_write 给队列添加一个元素， 队列长度加1 </p>
+</li>
+<li><p>av_fifo_freep2 销毁队列</p>
+</li>
+</ul>
+<h1 id="PacketQueue-操作函数"><a href="#PacketQueue-操作函数" class="headerlink" title="PacketQueue 操作函数"></a>PacketQueue 操作函数</h1><p><code>PacketQueue</code>操作提供以下方法：</p>
+<ul>
+<li><p>packet_queue_init:  初始化</p>
+</li>
+<li><p>packet_queue_destroy： 销毁</p>
+</li>
+<li><p>packet_queue_start： 开启</p>
+</li>
+<li><p>packet_queue_abort： 终止</p>
+</li>
+<li><p>packet_queue_get： 获取一个节点</p>
+</li>
+<li><p>packet_queue_put： 存入一个节点</p>
+</li>
+<li><p>packet_queue_put_nullpacket： 存入一个空节点</p>
+</li>
+<li><p>packet_queue_flush： 清除队列内所有的节点</p>
+</li>
+</ul>
+<h2 id="packet-queue-init"><a href="#packet-queue-init" class="headerlink" title="packet_queue_init"></a>packet_queue_init</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">static int packet_queue_init(PacketQueue *q)</span><br><span class="line">&#123;</span><br><span class="line">    memset(q, 0, sizeof(PacketQueue));</span><br><span class="line">    q-&gt;pkt_list = av_fifo_alloc2(1, sizeof(MyAVPacketList), AV_FIFO_FLAG_AUTO_GROW);</span><br><span class="line">    if (!q-&gt;pkt_list)</span><br><span class="line">        return AVERROR(ENOMEM);</span><br><span class="line">    q-&gt;mutex = SDL_CreateMutex();</span><br><span class="line">    if (!q-&gt;mutex) &#123;</span><br><span class="line">        av_log(NULL, AV_LOG_FATAL, &quot;SDL_CreateMutex(): %s\n&quot;, SDL_GetError());</span><br><span class="line">        return AVERROR(ENOMEM);</span><br><span class="line">    &#125;</span><br><span class="line">    q-&gt;cond = SDL_CreateCond();</span><br><span class="line">    if (!q-&gt;cond) &#123;</span><br><span class="line">        av_log(NULL, AV_LOG_FATAL, &quot;SDL_CreateCond(): %s\n&quot;, SDL_GetError());</span><br><span class="line">        return AVERROR(ENOMEM);</span><br><span class="line">    &#125;</span><br><span class="line">    q-&gt;abort_request = 1;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><p>内部调用av_fifo_alloc2 创建AVFifo 队列实例</p>
+</li>
+<li><p>创建mutex用于队列安全访问</p>
+</li>
+<li><p>创建cond 用于队列等待和唤醒控制</p>
+</li>
+<li><p>初始设置abort_request &#x3D; 1</p>
+</li>
+</ol>
+<h2 id="packet-queue-destroy"><a href="#packet-queue-destroy" class="headerlink" title="packet_queue_destroy"></a>packet_queue_destroy</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">static void packet_queue_destroy(PacketQueue *q)</span><br><span class="line">&#123;</span><br><span class="line">    packet_queue_flush(q);</span><br><span class="line">    av_fifo_freep2(&amp;q-&gt;pkt_list);</span><br><span class="line">    SDL_DestroyMutex(q-&gt;mutex);</span><br><span class="line">    SDL_DestroyCond(q-&gt;cond);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><p>调用packet_queue_flush清空队列中的元素</p>
+</li>
+<li><p>销毁AVFifo 队列实例</p>
+</li>
+<li><p>销毁mutex</p>
+</li>
+<li><p>销毁cond</p>
+</li>
+</ol>
+<h2 id="packet-queue-start"><a href="#packet-queue-start" class="headerlink" title="packet_queue_start"></a>packet_queue_start</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">static void packet_queue_start(PacketQueue *q)</span><br><span class="line">&#123;</span><br><span class="line">    SDL_LockMutex(q-&gt;mutex);</span><br><span class="line">    q-&gt;abort_request = 0;</span><br><span class="line">    q-&gt;serial++;</span><br><span class="line">    SDL_UnlockMutex(q-&gt;mutex);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>只是加锁，将abort_request设置为0，并且将serial加1，然后解锁。</p>
+<h2 id="packet-queue-abort"><a href="#packet-queue-abort" class="headerlink" title="packet_queue_abort"></a>packet_queue_abort</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">static void packet_queue_abort(PacketQueue *q)</span><br><span class="line">&#123;</span><br><span class="line">    SDL_LockMutex(q-&gt;mutex);</span><br><span class="line"></span><br><span class="line">    q-&gt;abort_request = 1;</span><br><span class="line"></span><br><span class="line">    SDL_CondSignal(q-&gt;cond);</span><br><span class="line"></span><br><span class="line">    SDL_UnlockMutex(q-&gt;mutex);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>加锁，将abort_request设置为1，标记为队列被终止。</p>
+<p>同时唤醒等待条件变量的线程，使其正常退出,   解锁。</p>
+<h2 id="packet-queue-get"><a href="#packet-queue-get" class="headerlink" title="packet_queue_get"></a>packet_queue_get</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* return &lt; 0 if aborted, 0 if no packet and &gt; 0 if packet.  */</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">packet_queue_get</span><span class="params">(PacketQueue *q, AVPacket *pkt, <span class="type">int</span> block, <span class="type">int</span> *serial)</span></span><br><span class="line">&#123;</span><br><span class="line">    MyAVPacketList pkt1;</span><br><span class="line">    <span class="type">int</span> ret;</span><br><span class="line">    <span class="comment">//加锁</span></span><br><span class="line">    SDL_LockMutex(q-&gt;mutex);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="keyword">if</span> (q-&gt;abort_request) &#123;</span><br><span class="line">            <span class="comment">//队列终止了, 设置返回值为-1</span></span><br><span class="line">            ret = <span class="number">-1</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//从pkt_list中读出一个节点，放入MyAVPacketList中，同时更新队列的信息</span></span><br><span class="line">        <span class="keyword">if</span> (av_fifo_read(q-&gt;pkt_list, &amp;pkt1, <span class="number">1</span>) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">//更新队列长度</span></span><br><span class="line">            q-&gt;nb_packets--;</span><br><span class="line">            <span class="comment">//更新队列占用内存大小</span></span><br><span class="line">            q-&gt;size -= pkt1.pkt-&gt;size + <span class="keyword">sizeof</span>(pkt1);</span><br><span class="line">            <span class="comment">//更新队列时长</span></span><br><span class="line">            q-&gt;duration -= pkt1.pkt-&gt;duration;</span><br><span class="line">            <span class="comment">//转移pkt1.pkt的内容到pkt中</span></span><br><span class="line">            av_packet_move_ref(pkt, pkt1.pkt);</span><br><span class="line">            <span class="comment">//设置serial的值</span></span><br><span class="line">            <span class="keyword">if</span> (serial)</span><br><span class="line">                *serial = pkt1.serial;</span><br><span class="line">            <span class="comment">//pkt1.pkt内容已近被转移，释放pkt1.pkt的内存</span></span><br><span class="line">            av_packet_free(&amp;pkt1.pkt);</span><br><span class="line">            <span class="comment">//返回值&gt;0,代表从队列获取到了元素</span></span><br><span class="line">            ret = <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!block) &#123;</span><br><span class="line">            <span class="comment">//没有获取到元素，但是调用放要求不阻塞，设置返回值为0，跳出循环</span></span><br><span class="line">            ret = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">//没读到元素，阻塞等待有元素可以获取</span></span><br><span class="line">            SDL_CondWait(q-&gt;cond, q-&gt;mutex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//解锁</span></span><br><span class="line">    SDL_UnlockMutex(q-&gt;mutex);</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从队列中获取一个元素</p>
+<ol>
+<li><p>加锁</p>
+</li>
+<li><p>获取成功，队列元素减少，更新队列信息</p>
+</li>
+<li><p>获取失败，要求不阻塞，立马返回</p>
+</li>
+<li><p>获取失败，要求阻塞，调用wait进入等待状态</p>
+</li>
+<li><p>解锁</p>
+</li>
+</ol>
+<h2 id="packet-queue-put"><a href="#packet-queue-put" class="headerlink" title="packet_queue_put"></a>packet_queue_put</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">static int packet_queue_put_private(PacketQueue *q, AVPacket *pkt)</span><br><span class="line">&#123;</span><br><span class="line">    MyAVPacketList pkt1;</span><br><span class="line">    int ret;</span><br><span class="line">    //如果队列被终止，返回-1</span><br><span class="line">    if (q-&gt;abort_request)</span><br><span class="line">       return -1;</span><br><span class="line"></span><br><span class="line">    //给节点填充数据</span><br><span class="line">    pkt1.pkt = pkt;</span><br><span class="line">    //设置pkt的序列号</span><br><span class="line">    pkt1.serial = q-&gt;serial;</span><br><span class="line">    //将节点添加到队列</span><br><span class="line">    ret = av_fifo_write(q-&gt;pkt_list, &amp;pkt1, 1);</span><br><span class="line">    if (ret &lt; 0)</span><br><span class="line">        return ret;</span><br><span class="line">    //更新队列大小</span><br><span class="line">    q-&gt;nb_packets++;</span><br><span class="line">    //更新队列内存大小，添加节点size(pkt内存的大小 + 节点数据大小)</span><br><span class="line">    q-&gt;size += pkt1.pkt-&gt;size + sizeof(pkt1);</span><br><span class="line">    //更新队列的总时长</span><br><span class="line">    q-&gt;duration += pkt1.pkt-&gt;duration;</span><br><span class="line">    /* XXX: should duplicate packet data in DV case */</span><br><span class="line">    SDL_CondSignal(q-&gt;cond);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static int packet_queue_put(PacketQueue *q, AVPacket *pkt)</span><br><span class="line">&#123;</span><br><span class="line">    AVPacket *pkt1;</span><br><span class="line">    int ret;</span><br><span class="line">    //创建pkt1</span><br><span class="line">    pkt1 = av_packet_alloc();</span><br><span class="line">    if (!pkt1) &#123;</span><br><span class="line">        //创建pkt1失败，取消引用pkt</span><br><span class="line">        av_packet_unref(pkt);</span><br><span class="line">        return -1;</span><br><span class="line">    &#125;</span><br><span class="line">    //将pkt内容转移到pkt1中</span><br><span class="line">    av_packet_move_ref(pkt1, pkt);</span><br><span class="line">    //加锁操加入队列</span><br><span class="line">    SDL_LockMutex(q-&gt;mutex);</span><br><span class="line">    //调用packet_queue_put_private将pkt1放入队列中</span><br><span class="line">    ret = packet_queue_put_private(q, pkt1);</span><br><span class="line">    SDL_UnlockMutex(q-&gt;mutex);</span><br><span class="line"></span><br><span class="line">    if (ret &lt; 0)</span><br><span class="line">        //放入队列失败，需要取消引用pkt1</span><br><span class="line">        av_packet_free(&amp;pkt1);</span><br><span class="line"></span><br><span class="line">    return ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><p>将AVPacket封装为MyAVPacketList，保存在内部的队列中</p>
+</li>
+<li><p>队列长度加1，同时更新时长，内存占用等信息</p>
+</li>
+<li><p>packet_queue_put内部调用packet_queue_put_private来完成相关的操作</p>
+</li>
+</ol>
+<h2 id="packet-queue-put-nullpacket"><a href="#packet-queue-put-nullpacket" class="headerlink" title="packet_queue_put_nullpacket"></a>packet_queue_put_nullpacket</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//播放完了，从文件中读出了空的pkt，空的pkt丢给解码器的时候，会冲洗解码器，将解码器剩余的额数据读出来</span><br><span class="line">static int packet_queue_put_nullpacket(PacketQueue *q, AVPacket *pkt, int stream_index)</span><br><span class="line">&#123;</span><br><span class="line">    //设置pkt对应的stream_index </span><br><span class="line">    pkt-&gt;stream_index = stream_index;</span><br><span class="line">    //添加有一个内容为空的pkt到队列中</span><br><span class="line">    return packet_queue_put(q, pkt);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><p>给队列添加一个内容为空的pkt</p>
+</li>
+<li><p>设置pkt对应的stream_index，追加到队列中</p>
+</li>
+</ol>
+<h2 id="packet-queue-flush"><a href="#packet-queue-flush" class="headerlink" title="packet_queue_flush"></a>packet_queue_flush</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">static void packet_queue_flush(PacketQueue *q)</span><br><span class="line">&#123;</span><br><span class="line">    MyAVPacketList pkt1;</span><br><span class="line">    //加锁</span><br><span class="line">    SDL_LockMutex(q-&gt;mutex);</span><br><span class="line">    //从内部队列循环获取元素，存入pkt1中</span><br><span class="line">    while (av_fifo_read(q-&gt;pkt_list, &amp;pkt1, 1) &gt;= 0)</span><br><span class="line">        //释放MyAVPacketList中的AVPacket的内存</span><br><span class="line">        av_packet_free(&amp;pkt1.pkt);</span><br><span class="line">    //更新队列信息</span><br><span class="line">    q-&gt;nb_packets = 0;</span><br><span class="line">    q-&gt;size = 0;</span><br><span class="line">    q-&gt;duration = 0;</span><br><span class="line">    //serial加1</span><br><span class="line">    q-&gt;serial++;</span><br><span class="line">    //解锁</span><br><span class="line">    SDL_UnlockMutex(q-&gt;mutex);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> 清空队列，释放节点的内存，更新队列信息。</p>
+<p>而对于serial的操作不是设置为0，而是在原来的基础上增加了1，为什么呢？</p>
+<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><ol>
+<li><p>ffplay 用PacketQueue来保存解封装后的AVPacket</p>
+</li>
+<li><p>PacketQueue对元素的操作，依赖于内部基于ffmpeg AVFifo的队列实例</p>
+</li>
+<li><p>PacketQueue通过mutex来保证线层安全</p>
+</li>
+<li><p>PacketQueue通过条件变量来控制写入和读取的顺序</p>
+</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yxibng.github.io">yxibng</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yxibng.github.io/2022/03/14/ffmpeg/2022-03-14-ffplay-packet%20queue%20%20%E5%88%86%E6%9E%90/">https://yxibng.github.io/2022/03/14/ffmpeg/2022-03-14-ffplay-packet%20queue%20%20%E5%88%86%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://yxibng.github.io" target="_blank">yxibng</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/ffmpeg/">ffmpeg</a></div><div class="post-share"><div class="social-share" data-image="https://github.com/yxibng.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2022/03/15/ffmpeg/2022-03-15-ffmpeg%20filters/" title="FFmpeg filter"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">FFmpeg filter</div></div><div class="info-2"><div class="info-item-1">参考： FFmpeg filter简介 - Tocy - 博客园 FFmpeg Filtering Guide FFmpeg Filters Documentation [FFmpeg filter的使用介绍](FFmpeg filter的使用介绍 - 简书) </div></div></div></a><a class="pagination-related" href="/2022/03/13/ffmpeg/2022-03-13-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%204/" title="ffmpeg example 4.视频文件封装和编码"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">ffmpeg example 4.视频文件封装和编码</div></div><div class="info-2"><div class="info-item-1">今天学习 ffmpeg/doc/examples/muxing.c 该程序接受一个参数，指定输出的文件的路径，例如/tmp/mux.mp4,/tmp/mux.mov。 文件名的后缀会用来推测生成的AVFormatContext的格式，如果没有指定，就使用mpeg。使用fmt 默认的视频编码器和音频编码器，编码10秒钟的音视频数据，交替写入文件。 操作封装需要操作AVFormatContext 创建AVFormatContext1234567//创建AVFormatContext， 根据文件后缀来推测output formatavformat_alloc_output_context2(&amp;oc, NULL, NULL, filename);if (!oc) &#123;    printf(&quot;Could not deduce output format from file extension: using MPEG.\n&quot;);    //无法推测output format， 使用mpeg    avformat_alloc_output_context2...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2022/09/23/ffmpeg/2022-09-23-ffmpeg-%E5%91%BD%E4%BB%A4/" title="ffmpeg 命令"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-09-23</div><div class="info-item-2">ffmpeg 命令</div></div><div class="info-2"><div class="info-item-1">ffmpeg1usage: ffmpeg [options] [[infile options] -i infile]... &#123;[outfile options] outfile&#125;...  音频转码 12345678#转码生成新的文件，目标为 - ar 采样率 44100，- ac 双声道，编码格式 aac- acodec 编码器 aacffmpeg -i source.mp3 -ar 44100 -ac 2 -acodec aac -y output.m4a# 转换为 pcmffmpeg -i source.mp3 -f s16le -acodec pcm_s16le output.raw  从 mp4 中提取 yuv 1ffmpeg -i xx.mp4 -s 960x540 -pix_fmt yuv420p xx.yuv   -s 来设置 yuv 数据的分辨率 -pix_fmt 设置 yuv 的颜色格式  从mp4或flv文件中提取h264 1ffmpeg -i test.flv -vcodec copy -an -bsf:v h264_mp4toanne...</div></div></div></a><a class="pagination-related" href="/2022/03/12/ffmpeg/2022-03-12-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%203/" title="ffmpeg example 3.音频编码"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-12</div><div class="info-item-2">ffmpeg example 3.音频编码</div></div><div class="info-2"><div class="info-item-1">关于如何源码调试，参考前面的文章ffmpeg example 视频编码 - 掘金 今天分析encode_audio.c学习ffmpeg如何编码音频数据，由于太简单了，直接贴代码 ##main函数 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109110111112113114115116117118119120121122123124125126127128int main(int argc, char **argv)&#123;    const char *filename;    const AVCodec *codec;    AVCodecContext *c= NULL;    AVFr...</div></div></div></a><a class="pagination-related" href="/2022/03/13/ffmpeg/2022-03-13-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%204/" title="ffmpeg example 4.视频文件封装和编码"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-13</div><div class="info-item-2">ffmpeg example 4.视频文件封装和编码</div></div><div class="info-2"><div class="info-item-1">今天学习 ffmpeg/doc/examples/muxing.c 该程序接受一个参数，指定输出的文件的路径，例如/tmp/mux.mp4,/tmp/mux.mov。 文件名的后缀会用来推测生成的AVFormatContext的格式，如果没有指定，就使用mpeg。使用fmt 默认的视频编码器和音频编码器，编码10秒钟的音视频数据，交替写入文件。 操作封装需要操作AVFormatContext 创建AVFormatContext1234567//创建AVFormatContext， 根据文件后缀来推测output formatavformat_alloc_output_context2(&amp;oc, NULL, NULL, filename);if (!oc) &#123;    printf(&quot;Could not deduce output format from file extension: using MPEG.\n&quot;);    //无法推测output format， 使用mpeg    avformat_alloc_output_context2...</div></div></div></a><a class="pagination-related" href="/2022/03/15/ffmpeg/2022-03-15-ffplay-frame%20queue%20%E5%88%86%E6%9E%90/" title="ffplay frame queue 分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-15</div><div class="info-item-2">ffplay frame queue 分析</div></div><div class="info-2"><div class="info-item-1">参考：  ffplay frame queue分析 FrameQueue数据结构ffplay 定义了 FrameQueue 来管理解码后的音频，视频以及字幕。 12345678910111213141516171819202122232425262728/* Common struct for handling all types of decoded data and allocated render buffers. */typedef struct Frame &#123;    AVFrame *frame;       //audio/video frame    AVSubtitle sub;       //字幕    int serial;           //序列号    double pts;           /* presentation timestamp for the frame */    double duration;      /* estimated duration of the frame */    int64_t pos;  ...</div></div></div></a><a class="pagination-related" href="/2022/03/13/ffmpeg/2022-03-14-ffmpeg%20example%20%E5%AD%A6%E4%B9%A0%205/" title="ffmpeg example 5.硬件解码"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-13</div><div class="info-item-2">ffmpeg example 5.硬件解码</div></div><div class="info-2"><div class="info-item-1">在hw_decode.c示例中，ffmpeg展示了如何使用硬件加速来解码视频，我们来分析一下是怎么实现的。 硬件加速设备类型展示所有可用的硬件加速方法, 在mac上只找到了videotoolbox加速的方式。 123ffmpeg -hwaccelsHardware acceleration methods:videotoolbox  查看 AVHWDeviceType的定义，发现别的平台可以使用cuda，opencl， mediacodec，vulkan等来实现硬件加速。 1234567891011121314enum AVHWDeviceType &#123;    AV_HWDEVICE_TYPE_NONE,    AV_HWDEVICE_TYPE_VDPAU,    AV_HWDEVICE_TYPE_CUDA,    AV_HWDEVICE_TYPE_VAAPI,    AV_HWDEVICE_TYPE_DXVA2,    AV_HWDEVICE_TYPE_QSV,    AV_HWDEVICE_TYPE_VIDEOTOOLBOX,    AV_HWDEVICE_TYPE_...</div></div></div></a><a class="pagination-related" href="/2022/03/15/ffmpeg/2022-03-15-ffmpeg%20filters/" title="FFmpeg filter"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-15</div><div class="info-item-2">FFmpeg filter</div></div><div class="info-2"><div class="info-item-1">参考： FFmpeg filter简介 - Tocy - 博客园 FFmpeg Filtering Guide FFmpeg Filters Documentation [FFmpeg filter的使用介绍](FFmpeg filter的使用介绍 - 简书) </div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">yxibng</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yxibng" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#AVFifo"><span class="toc-number">1.</span> <span class="toc-text">AVFifo</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PacketQueue-%E6%93%8D%E4%BD%9C%E5%87%BD%E6%95%B0"><span class="toc-number"></span> <span class="toc-text">PacketQueue 操作函数</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#packet-queue-init"><span class="toc-number">1.</span> <span class="toc-text">packet_queue_init</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#packet-queue-destroy"><span class="toc-number">2.</span> <span class="toc-text">packet_queue_destroy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#packet-queue-start"><span class="toc-number">3.</span> <span class="toc-text">packet_queue_start</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#packet-queue-abort"><span class="toc-number">4.</span> <span class="toc-text">packet_queue_abort</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#packet-queue-get"><span class="toc-number">5.</span> <span class="toc-text">packet_queue_get</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#packet-queue-put"><span class="toc-number">6.</span> <span class="toc-text">packet_queue_put</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#packet-queue-put-nullpacket"><span class="toc-number">7.</span> <span class="toc-text">packet_queue_put_nullpacket</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#packet-queue-flush"><span class="toc-number">8.</span> <span class="toc-text">packet_queue_flush</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-number">9.</span> <span class="toc-text">总结：</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/16/%E5%BE%AE%E4%BF%A1%20xlog%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="无标题">无标题</a><time datetime="2026-04-16T14:24:32.737Z" title="发表于 2026-04-16 22:24:32">2026-04-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/04/03/cmake/2024-04-03-cmake-ios-code-sign/" title="CMake ios code signing">CMake ios code signing</a><time datetime="2024-04-02T16:00:00.000Z" title="发表于 2024-04-03 00:00:00">2024-04-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/18/ios/2024-03-18-ios-xib/" title="ios xib 总结">ios xib 总结</a><time datetime="2024-03-17T16:00:00.000Z" title="发表于 2024-03-18 00:00:00">2024-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/08/debug-xlog-osx/" title="Xcode 源码调试微信 xlog">Xcode 源码调试微信 xlog</a><time datetime="2024-03-07T16:00:00.000Z" title="发表于 2024-03-08 00:00:00">2024-03-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/06/09/c++/2023-06-09-%E4%BD%8D%E5%9F%9F%20%E9%AB%98%E4%BD%8E%E4%BD%8D/" title="结构体位域中的高低位问题">结构体位域中的高低位问题</a><time datetime="2023-06-08T16:00:00.000Z" title="发表于 2023-06-09 00:00:00">2023-06-09</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2022 - 2026 By yxibng</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script src="js/local-search-fix.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="输入关键词搜索..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>

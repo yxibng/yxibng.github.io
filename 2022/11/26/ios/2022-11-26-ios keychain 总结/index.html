@@ -1,0 +1,341 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>ios keychain 总结 | yxibng</title><meta name="author" content="yxibng"><meta name="copyright" content="yxibng"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Keychain  是什么一个加密的数据库， 可以用来存储小的用户数据， 包括  kSecClassGenericPassword：通用密码（可以用来存自定义数据） kSecClassInternetPassword：互联网密码 kSecClassCertificate：证书 kSecClassKey：秘钥 kSecClassIdentity：证书+秘钥  Figure 1 Securing th">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ios keychain 总结">
+<meta property="og:url" content="https://yxibng.github.io/2022/11/26/ios/2022-11-26-ios%20keychain%20%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="yxibng">
+<meta property="og:description" content="Keychain  是什么一个加密的数据库， 可以用来存储小的用户数据， 包括  kSecClassGenericPassword：通用密码（可以用来存自定义数据） kSecClassInternetPassword：互联网密码 kSecClassCertificate：证书 kSecClassKey：秘钥 kSecClassIdentity：证书+秘钥  Figure 1 Securing th">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/yxibng.png">
+<meta property="article:published_time" content="2022-11-25T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-16T14:24:32.737Z">
+<meta property="article:author" content="yxibng">
+<meta property="article:tag" content="iOS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/yxibng.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "ios keychain 总结",
+  "url": "https://yxibng.github.io/2022/11/26/ios/2022-11-26-ios%20keychain%20%E6%80%BB%E7%BB%93/",
+  "image": "https://github.com/yxibng.png",
+  "datePublished": "2022-11-25T16:00:00.000Z",
+  "dateModified": "2026-04-16T14:24:32.737Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "yxibng",
+      "url": "https://yxibng.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yxibng.github.io/2022/11/26/ios/2022-11-26-ios%20keychain%20%E6%80%BB%E7%BB%93/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ios keychain 总结',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">yxibng</span></a><a class="nav-page-title" href="/"><span class="site-name">ios keychain 总结</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">ios keychain 总结</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2022-11-25T16:00:00.000Z" title="发表于 2022-11-26 00:00:00">2022-11-26</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="Keychain-是什么"><a href="#Keychain-是什么" class="headerlink" title="Keychain  是什么"></a>Keychain  是什么</h1><p>一个加密的数据库， 可以用来存储小的用户数据， 包括</p>
+<ul>
+<li>kSecClassGenericPassword：通用密码（可以用来存自定义数据）</li>
+<li>kSecClassInternetPassword：互联网密码</li>
+<li>kSecClassCertificate：证书</li>
+<li>kSecClassKey：秘钥</li>
+<li>kSecClassIdentity：证书+秘钥</li>
+</ul>
+<p><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16692950150511669295014987.png"><br>Figure 1 Securing the user’s secrets in a keychain</p>
+<p>打开 mac 系统的 keychain 观察一下， 发现系统有多个keychain，每个keychain都有上图对应的项目<br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16694375672261669437566402.png"></p>
+<h1 id="如何管理数据，增删查改"><a href="#如何管理数据，增删查改" class="headerlink" title="如何管理数据，增删查改"></a>如何管理数据，增删查改</h1><p><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16692963470741669296346746.png"><br>Figure 1 Putting data and attributes into a keychain</p>
+<p>keychain 将要存储的数据封装为 SecKeychainItemRef，通过存取 SecKeychainItem 来达到对数据的管理。</p>
+<p>SecKeychainItemRef 包含</p>
+<ul>
+<li>data， CFData， 要存取的数据</li>
+<li>attributes, 该条目的属性，存取权限，查询标签等</li>
+</ul>
+<p>提供的api</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">//添加</span><br><span class="line">OSStatus SecItemAdd(CFDictionaryRef attributes, CFTypeRef  _Nullable *result);</span><br><span class="line">//查询</span><br><span class="line">OSStatus SecItemCopyMatching(CFDictionaryRef query, CFTypeRef  _Nullable *result);</span><br><span class="line">//更新</span><br><span class="line">OSStatus SecItemUpdate(CFDictionaryRef query, CFDictionaryRef attributesToUpdate);</span><br><span class="line">//删除</span><br><span class="line">OSStatus SecItemDelete(CFDictionaryRef query);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="SecItemAdd"><a href="#SecItemAdd" class="headerlink" title="SecItemAdd"></a>SecItemAdd</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">OSStatus SecItemAdd(CFDictionaryRef attributes, CFTypeRef  _Nullable *result);</span><br></pre></td></tr></table></figure>
+
+<h3 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h3><p><strong>attributes</strong></p>
+<p>一个字典，描述要添加的数据：</p>
+<ul>
+<li>要添加数据类型，对应的 key 为<code>kSecClass</code>, value 可以是<ul>
+<li>kSecClassGenericPassword：通用密码（可以用来存自定义数据）</li>
+<li>kSecClassInternetPassword：互联网密码</li>
+<li>kSecClassCertificate：证书</li>
+<li>kSecClassKey：秘钥</li>
+<li>kSecClassIdentity：证书+秘钥</li>
+</ul>
+</li>
+<li>数添加的数据本身, key 为 <code> kSecValueData</code>, value 为 <code>CFDataRef</code> 类型</li>
+<li>关联的属性, 参考：<a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/keychain_services/keychain_items/item_attribute_keys_and_values?language=objc">Item Attribute Keys and Values</a><ul>
+<li>每种类型关联的属性可以不同，例如 kSecClassInternetPassword 可以关联 <code>kSecAttrServer</code>, <code>kSecAttrPort</code>, <code>kSecAttrProtocol</code>， 而 <code>kSecClassGenericPassword</code>就没有这些选项</li>
+<li><code>kSecAttrAccessGroup</code> 可以指定存入的keychain group，这个会影响到查询范围</li>
+</ul>
+</li>
+<li>添加后，返回添加结果的类型，指定类型的数据会存入 result 字段。参考：<a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/keychain_services/keychain_items/item_return_result_keys?language=objc"> Item Return Result Keys</a></li>
+</ul>
+<p><strong>result</strong></p>
+<p>添加结束，函数返回，指向新添加的条目。根据 attributes 中指定的类型，返回对应的值。参考： <a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/keychain_services/keychain_items/item_return_result_keys?language=objc"> Item Return Result Keys</a></p>
+<p>一般添加不关心新条目，传nil</p>
+<h3 id="返回值"><a href="#返回值" class="headerlink" title="返回值"></a>返回值</h3><p>成功或者错误码。参考：<a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/1542001-security_framework_result_codes?language=objc">Security Framework Result Codes</a></p>
+<h3 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h3><ol>
+<li>kSecAttrAccessGroup 可以指定添加到 钥匙串分组，该分组中的成员共享该条目</li>
+<li>一次添加多条，可以使用<code>kSecUseItemList </code>传入字典数组，但是不能用于密码类型</li>
+<li>添加是同步执行，放到主线程可能会卡界面，可以用异步方式</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (void)addKeychainItemWithAttributes:(CFDictionaryRef)attrs completion:(void(^)(OSStatus status, CFTypeRef item))completion &#123;</span><br><span class="line">    dispatch_async(backgroundQueue, ^&#123;</span><br><span class="line">        CFTypeRef item = NULL;</span><br><span class="line">        OSStatus addResult = SecItemAdd(attrs, &amp;item);</span><br><span class="line">        completion(addResult, item);</span><br><span class="line">        if (item) &#123;</span><br><span class="line">            CFRelease(item);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="SecItemCopyMatching"><a href="#SecItemCopyMatching" class="headerlink" title="SecItemCopyMatching"></a>SecItemCopyMatching</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">OSStatus SecItemCopyMatching(CFDictionaryRef query, CFTypeRef  _Nullable *result);</span><br></pre></td></tr></table></figure>
+
+<p>通过 query 指定查询条件，将查询结果存入 result 中。</p>
+<h3 id="参数-1"><a href="#参数-1" class="headerlink" title="参数"></a>参数</h3><p><strong>query</strong><br>用于指定查询条件</p>
+<ul>
+<li>查询的数据类型，通过 <code>kSecClass</code> 指定</li>
+<li>关联的属性， 用于缩小查询范围</li>
+<li>查询参数，返回一条还是多条匹配项，是否大消息敏感，或者从特定项中搜索。参考： <a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/keychain_services/keychain_items/search_attribute_keys_and_values?language=objc"> Search Attribute Keys and Values</a></li>
+<li>指定返回类型，指定的类型不同，result 中返回的类型就不同。 参考： <a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/keychain_services/keychain_items/item_return_result_keys?language=objc">Item Return Result Keys </a></li>
+</ul>
+<p>**result **</p>
+<p>保存查询结果。<br>例如： 指定  <code>kSecReturnData: kCFBooleanTrue</code>  ，result 中存的就是<code>CFDataRef </code>类型的数据。参考： <a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/keychain_services/keychain_items/item_return_result_keys?language=objc">Item Return Result Keys</a></p>
+<h3 id="返回值-1"><a href="#返回值-1" class="headerlink" title="返回值"></a>返回值</h3><p>成功或者错误码。参考：<a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/1542001-security_framework_result_codes?language=objc">Security Framework Result Codes</a></p>
+<h3 id="注意-1"><a href="#注意-1" class="headerlink" title="注意"></a>注意</h3><ol>
+<li>默认返回第一个匹配项，如果想查询多条匹配，指定 <code>kSecMatchLimit</code>  大于1， 此时 result 为 <code>CFArrayRef</code>  类型</li>
+<li>当类型为<code>kSecInternetPasswordItemClass</code> 或 <code>kSecGenericPasswordItemClass</code>时， 不能同时指定<code>kSecReturnData</code> 和 <code>kSecMatchLimitAll</code>, 原因是拷贝每个密码时，需要额外的授权验证。</li>
+<li>默认情况下，会搜索当前keychain 以及所有加入的 keychain group， 通过 <code>kSecAttrAccessGroup</code> 可以指定要在哪个 keychain group 查询</li>
+<li>主线程同步执行会卡UI， 可以异步执行</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">- (void)findKeychainItemWithAttributes:(NSDictionary *)attributes completion:(void(^)(OSStatus status, CFTypeRef item))completion &#123;</span><br><span class="line">    dispatch_async(backgroundQueue, ^&#123;</span><br><span class="line">        CFDictionaryRef attrs = (__bridge CFDictionaryRef)attributes;</span><br><span class="line">        CFTypeRef item = NULL;</span><br><span class="line">        OSStatus result = SecItemCopyMatching(attrs, &amp;item);</span><br><span class="line">        completion(result, item);</span><br><span class="line">        CFRelease(item);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="SecItemUpdate"><a href="#SecItemUpdate" class="headerlink" title="SecItemUpdate"></a>SecItemUpdate</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">OSStatus SecItemUpdate(CFDictionaryRef query, CFDictionaryRef attributesToUpdate);</span><br></pre></td></tr></table></figure>
+
+<h3 id="参数-2"><a href="#参数-2" class="headerlink" title="参数"></a>参数</h3><p><strong>query</strong></p>
+<p>用来指定要更新的条目, 执行更新，需要先查询到要更新的条目。<br>参考 SecItemCopyMatching 如何指定查询条件。</p>
+<p><strong>attributesToUpdate</strong></p>
+<p>指定需要更新的属性。</p>
+<h3 id="返回值-2"><a href="#返回值-2" class="headerlink" title="返回值"></a>返回值</h3><p>成功或者错误码。参考：<a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/1542001-security_framework_result_codes?language=objc">Security Framework Result Codes</a></p>
+<h3 id="注意-2"><a href="#注意-2" class="headerlink" title="注意"></a>注意</h3><p>主线程同步执行会卡UI， 可以异步执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (void)updateKeyChainItemWithAttributes:(CFDictionaryRef)attrs update:(CFDictionaryRef)update completion:(void(^)(OSStatus status))completion &#123;</span><br><span class="line">    dispatch_async(backgroundQueue, ^&#123;</span><br><span class="line">        OSStatus updateResult = SecItemUpdate(attrs, update);</span><br><span class="line">        completion(updateResult);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="SecItemDelete"><a href="#SecItemDelete" class="headerlink" title="SecItemDelete"></a>SecItemDelete</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">OSStatus SecItemDelete(CFDictionaryRef query);</span><br></pre></td></tr></table></figure>
+
+<h3 id="参数-3"><a href="#参数-3" class="headerlink" title="参数"></a>参数</h3><p><strong>query</strong></p>
+<p>用来指定要删除的的条目， 参考SecItemCopyMatching 如何指定查询条件。</p>
+<h3 id="返回值-3"><a href="#返回值-3" class="headerlink" title="返回值"></a>返回值</h3><p>成功或者错误码。参考：<a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/1542001-security_framework_result_codes?language=objc">Security Framework Result Codes</a></p>
+<h3 id="注意-3"><a href="#注意-3" class="headerlink" title="注意"></a>注意</h3><ol>
+<li>默认删除所有的匹配项，</li>
+<li>可以通过指定<code>kSecMatchItemList </code>来限定删除范围， <code>kSecMatchItemList</code>对应的值的类型为<code>CFArrayRef </code>, 数组中每一项的类型必须相同，<ul>
+<li>针对临时引用，每一项是一个引用，引用的类型可以是<ul>
+<li>SecKeychainItemRef,</li>
+<li>SecKeyRef</li>
+<li>SecCertificateRef</li>
+<li>SecIdentityRef</li>
+<li>CFDataRef</li>
+</ul>
+</li>
+<li>针对持久化引用, 引用的必须是类型是 <code>CFDataRef</code></li>
+</ul>
+</li>
+<li>主线程同步执行会卡UI， 可以异步执行</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (void)deleteKeychainItemWithAttributes:(CFDictionaryRef)attrs completion:(void(^)(OSStatus status))completion &#123;</span><br><span class="line">    dispatch_async(backgroundQueue, ^&#123;</span><br><span class="line">        OSStatus deleteResult = SecItemDelete(attrs);</span><br><span class="line">        completion(deleteResult);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="什么是临时引用，持久化引用又是什么？"><a href="#什么是临时引用，持久化引用又是什么？" class="headerlink" title="什么是临时引用，持久化引用又是什么？"></a>什么是临时引用，持久化引用又是什么？</h3><p><strong>临时引用</strong></p>
+<p>对应的 key  值是<code>kSecReturnRef</code></p>
+<blockquote>
+<p>The corresponding value is of type <code>CFBooleanRef</code>. A value of <code>kCFBooleanTrue</code> indicates that a reference should be returned. Depending on the item class requested, the returned references may be of type <code>SecKeychainItemRef</code>, <code>SecKeyRef</code>, <code>SecCertificateRef</code>, <code>SecIdentityRef</code>, or <code>CFDataRef</code>.</p>
+</blockquote>
+<p>示例 ：SecCertificateRef 证书对象的引用在keychain中存取</p>
+<p>创建SecCertificateRef</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SecCertificateRef certificate =</span><br><span class="line">    SecCertificateCreateWithData(NULL, (__bridge CFDataRef)certData);</span><br><span class="line">		 </span><br><span class="line">if (certificate)  &#123; CFRelease(certificate); &#125; // After you are done with it</span><br></pre></td></tr></table></figure>
+
+<p>将证书存入keychain</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">NSDictionary* addquery = @&#123; (id)kSecValueRef:   (__bridge id)certificate,</span><br><span class="line">                            (id)kSecClass:      (id)kSecClassCertificate,</span><br><span class="line">                            (id)kSecAttrLabel:  @&quot;My Certificate&quot;,</span><br><span class="line">                           &#125;;</span><br><span class="line">						   </span><br><span class="line">						   </span><br><span class="line">OSStatus status = SecItemAdd((__bridge CFDictionaryRef)addquery, NULL);</span><br><span class="line">if (status != errSecSuccess) &#123;</span><br><span class="line">    // Handle the error</span><br><span class="line">&#125;						   </span><br></pre></td></tr></table></figure>
+
+<p>从keychain读取证书</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">NSDictionary *getquery = @&#123; (id)kSecClass:     (id)kSecClassCertificate,</span><br><span class="line">                            (id)kSecAttrLabel: @&quot;My Certificate&quot;,</span><br><span class="line">                            (id)kSecReturnRef: @YES,</span><br><span class="line">                            &#125;;</span><br><span class="line">SecCertificateRef certificate = NULL;</span><br><span class="line">OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)getquery,</span><br><span class="line">                                      (CFTypeRef *)&amp;certificate);</span><br><span class="line">if (status != errSecSuccess) &#123; &lt;# Handle error #&gt; &#125;</span><br><span class="line">else                         &#123; &lt;# Use certificate #&gt; &#125;</span><br><span class="line"> </span><br><span class="line">if (certificate) &#123; CFRelease(certificate); &#125; // After you are done with it</span><br></pre></td></tr></table></figure>
+
+<p>观察到这里用的就是 <code>kSecReturnRef</code>, 代表临时引用。</p>
+<ul>
+<li>SecKeychainItemRef,</li>
+<li>SecKeyRef</li>
+<li>SecCertificateRef</li>
+<li>SecIdentityRef</li>
+<li>CFDataRef</li>
+</ul>
+<p><strong>持久化引用</strong></p>
+<p>key 为 kSecReturnPersistentRef。</p>
+<blockquote>
+<p>The corresponding value is of type <code>CFBooleanRef</code>. A value of kCFBooleanTrue indicates that a persistent reference to an item should be returned as a <code>CFDataRef</code> object. Unlike normal references, a persistent reference may be stored on disk or passed between processes.</p>
+</blockquote>
+<ol>
+<li>一个持久化引用，引用的对象必须是<code>CFDataRef</code></li>
+<li>持久化引用可以存储在磁盘，可以跨进程传递</li>
+</ol>
+<h1 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h1><h2 id="Adding-a-Password-to-the-Keychain"><a href="#Adding-a-Password-to-the-Keychain" class="headerlink" title="Adding a Password to the Keychain"></a><a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/keychain_services/keychain_items/adding_a_password_to_the_keychain?language=objc">Adding a Password to the Keychain</a></h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">struct Credentials &#123;</span><br><span class="line">    var username: String</span><br><span class="line">    var password: String</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">enum KeychainError: Error &#123;</span><br><span class="line">    case noPassword</span><br><span class="line">    case unexpectedPasswordData</span><br><span class="line">    case unhandledError(status: OSStatus)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static let server = &quot;www.example.com&quot;</span><br><span class="line"></span><br><span class="line">let account = credentials.username</span><br><span class="line">let password = credentials.password.data(using: String.Encoding.utf8)!</span><br><span class="line">var query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,</span><br><span class="line">                            kSecAttrAccount as String: account,</span><br><span class="line">                            kSecAttrServer as String: server,</span><br><span class="line">                            kSecValueData as String: password]</span><br><span class="line">let status = SecItemAdd(query as CFDictionary, nil)</span><br><span class="line">guard status == errSecSuccess else &#123; throw KeychainError.unhandledError(status: status) &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="Searching-for-Keychain-Items"><a href="#Searching-for-Keychain-Items" class="headerlink" title="Searching for Keychain Items"></a><a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/keychain_services/keychain_items/searching_for_keychain_items?language=objc">Searching for Keychain Items</a></h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,</span><br><span class="line">                            kSecAttrServer as String: server,</span><br><span class="line">                            kSecMatchLimit as String: kSecMatchLimitOne,</span><br><span class="line">                            kSecReturnAttributes as String: true,</span><br><span class="line">                            kSecReturnData as String: true]</span><br><span class="line"></span><br><span class="line">var item: CFTypeRef?</span><br><span class="line">let status = SecItemCopyMatching(query as CFDictionary, &amp;item)</span><br><span class="line">guard status != errSecItemNotFound else &#123; throw KeychainError.noPassword &#125;</span><br><span class="line">guard status == errSecSuccess else &#123; throw KeychainError.unhandledError(status: status) &#125;</span><br><span class="line"></span><br><span class="line">guard let existingItem = item as? [String : Any],</span><br><span class="line">    let passwordData = existingItem[kSecValueData as String] as? Data,</span><br><span class="line">    let password = String(data: passwordData, encoding: String.Encoding.utf8),</span><br><span class="line">    let account = existingItem[kSecAttrAccount as String] as? String</span><br><span class="line">else &#123;</span><br><span class="line">    throw KeychainError.unexpectedPasswordData</span><br><span class="line">&#125;</span><br><span class="line">let credentials = Credentials(username: account, password: password)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="Updating-and-Deleting-Keychain-Items"><a href="#Updating-and-Deleting-Keychain-Items" class="headerlink" title="Updating and Deleting Keychain Items"></a><a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/keychain_services/keychain_items/updating_and_deleting_keychain_items?language=objc">Updating and Deleting Keychain Items</a></h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,</span><br><span class="line">                            kSecAttrServer as String: server]</span><br><span class="line">							</span><br><span class="line">let account = credentials.username</span><br><span class="line">let password = credentials.password.data(using: String.Encoding.utf8)!</span><br><span class="line">let attributes: [String: Any] = [kSecAttrAccount as String: account,</span><br><span class="line">                                 kSecValueData as String: password]</span><br><span class="line"></span><br><span class="line">//update								 								 </span><br><span class="line">let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)</span><br><span class="line">guard status != errSecItemNotFound else &#123; throw KeychainError.noPassword &#125;</span><br><span class="line">guard status == errSecSuccess else &#123; throw KeychainError.unhandledError(status: status) &#125;	</span><br><span class="line"></span><br><span class="line">//delete</span><br><span class="line">let status = SecItemDelete(query as CFDictionary)</span><br><span class="line">guard status == errSecSuccess || status == errSecItemNotFound else &#123; throw KeychainError.unhandledError(status: status) &#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="keychain-group-app-group"><a href="#keychain-group-app-group" class="headerlink" title="keychain group &amp; app group"></a>keychain group &amp; app group</h1><p>参考：<a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/security/keychain_services/keychain_items/sharing_access_to_keychain_items_among_a_collection_of_apps?language=objc">Sharing Access to Keychain Items Among a Collection of Apps</a></p>
+<blockquote>
+<p>Enable apps to share keychain items with each other by adding the apps to an access group.</p>
+</blockquote>
+<p>通过keychain group 可以在 app 间共享keychain item。</p>
+<blockquote>
+<p>An access group is a logical collection of apps tagged with a particular group name string. Any app in a given group can share keychain items with all the other apps in the same group. You can add an app to any number of groups, but the app is always part of at least one group that contains only itself. That is, an app can always store and retrieve private keychain items, regardless of whether it also participates in any other groups. Keychain items, on the other hand, are always part of exactly one group.</p>
+</blockquote>
+<p>默认情况下，app 加入了以自身id 为标记的分组中，这个分组中的所有 keychain item 仅限app 自身访问。</p>
+<p>通过加入其他分组，app 间可以通过 keychain group 共享 keychain item。</p>
+<h2 id="keychain-group-类型"><a href="#keychain-group-类型" class="headerlink" title="keychain group 类型"></a>keychain group 类型</h2><p>You control the groups that your app belongs to by manipulating its entitlements. In particular, an app belongs to all the groups named in a virtual array of strings that the system forms for each app as the concatenation of the following items, evaluated in this order:</p>
+<p><strong>Keychain access groups</strong><br>The optional Keychain Access Groups Entitlement holds an array of strings, each of which names an access group.</p>
+<p>显示指定加入的 keychain group， group id为 <code>[$(teamID).$(keychain group id)]</code></p>
+<p><strong>Application identifier</strong><br>Xcode automatically adds the application-identifier entitlement (or the com.apple.application-identifier entitlement in macOS) to every app during code signing, formed as the team identifier (team ID) plus the bundle identifier (bundle ID).</p>
+<p>隐式的加入了以自身为组的 keychain group,  group id为 <code>[$(teamID).$(bundle ID)]</code></p>
+<p><strong>Application groups</strong><br>When you collect related apps into an application group using the App Groups Entitlement, they share access to a group container, and gain the ability to message each other in certain ways. Starting in iOS 8, the array of strings given by this entitlement also extends the list of keychain access groups.</p>
+<p>由于加入了app group， 隐式的加入了以 app group 为组的 keychain group,  group id为 <code>[$(app group id)]</code></p>
+<p>Xcode handles the application identifier (app ID) for you when you set the bundle ID. You set the others by manipulating capabilities in Xcode.</p>
+<p>添加keychain group 和 app group 可以在xcode 中通过操作capabilities来实现。<br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16694538450341669453844996.png"><br><img src="https://fastly.jsdelivr.net/gh/yxibng/filebed@main/img/images/blog/16694538730181669453872352.png"></p>
+<h2 id="app-group-和-keychain-group-区别"><a href="#app-group-和-keychain-group-区别" class="headerlink" title="app group 和 keychain group 区别"></a>app group 和 keychain group 区别</h2><p>App groups and keychain access groups aren’t mutually exclusive—you can use both in the same app—but they do differ in several important ways that may help you decide which to use for a given situation.</p>
+<p>两者不是互相排斥的， 一个app可以同时加入keychain group 和 app group。</p>
+<p>First, as described above, using an app group enables additional data sharing beyond keychain items. You might want this extra sharing, or might already be using an app group for this purpose, and thus not need to add keychain access groups. On the other hand, you might not want to enable this additional sharing at all, and prefer keychain access groups instead.</p>
+<p>app group 除了共享 keychain item 之外，还能共享其他内容，例如共享偏好设置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">let userDefualts = UserDefaults.init(suiteName: &quot;$(group_Id)&quot;)</span><br><span class="line">userDefualts?.setValue(data, forKey: key)</span><br><span class="line">userDefualts?.synchronize()</span><br></pre></td></tr></table></figure>
+
+
+<p>Second, order matters. The system considers the first item in the list of access groups to be the app’s default access group. This is the access group that keychain services assumes if you don’t otherwise specify one when adding keychain items. An app group can’t ever be the default, because the app ID is always present and appears earlier in the list. However, a keychain access group can be the default, because it appears before the app ID. In particular, the first keychain access group, if any, that you specify in the corresponding capability becomes the app’s default access group. If you don’t specify any keychain access groups, then the app ID is the default.</p>
+<p>关于默认 group， 当添加，查询，更新，删除 keychain item 时，不指定<code>kSecAttrAccessGroup </code>时，默认操作的是哪个group ？</p>
+<ol>
+<li>系统以 group list 数组中的第一个为默认 group</li>
+<li>默认group 不会是app group， 因为它不会是第一个</li>
+<li>如果加入keychain group， 该 keychain group 可能为默认的 keychain group</li>
+<li>想限定keychain item 只在 app 内访问，不能被keychain group 访问，需要将 bundle id 所在的keychain group 置顶，或者明确指定使用 bundle id 标记的keychain group</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yxibng.github.io">yxibng</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yxibng.github.io/2022/11/26/ios/2022-11-26-ios%20keychain%20%E6%80%BB%E7%BB%93/">https://yxibng.github.io/2022/11/26/ios/2022-11-26-ios%20keychain%20%E6%80%BB%E7%BB%93/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://yxibng.github.io" target="_blank">yxibng</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/iOS/">iOS</a></div><div class="post-share"><div class="social-share" data-image="https://github.com/yxibng.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2022/12/21/2022-12-21-rbenv/" title="用 rbenv 来安装ruby"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">用 rbenv 来安装ruby</div></div><div class="info-2"><div class="info-item-1">参考： rbenv 1234567891011# Install Homebrew/bin/bash -c &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&quot;# Install rbenv and ruby-buildbrew install rbenv# Set up rbenv integration with your shellrbenv init# Check your installationcurl -fsSL https://github.com/rbenv/rbenv-installer/raw/main/bin/rbenv-doctor | bash  配置 .zshrc 12# rbenveval &quot;$(rbenv init - zsh)&quot;  Restart your terminal to apply your changes. Next, you can install the Ruby version...</div></div></div></a><a class="pagination-related" href="/2022/11/16/Shell/2022-11-16-%E5%91%BD%E4%BB%A4%E8%A1%8C%E9%87%8D%E5%90%AFiPhone/" title="命令行重启iPhone"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">命令行重启iPhone</div></div><div class="info-2"><div class="info-item-1">参考： Any way to reboot a iDevice that is connected to a USB port via terminal (Mac terminal)? 安装libimobiledevice 12brew install libimobiledevice 使用 1idevicediagnostics restart </div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2023/03/14/ios/2023-03-14-%E4%BD%BF%E7%94%A8Apple%20Configurator%20%E8%8E%B7%E5%8F%96%20ipa%20%E6%96%87%E4%BB%B6/" title="使用 Apple Configurator 获取 ipa 文件"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-14</div><div class="info-item-2">使用 Apple Configurator 获取 ipa 文件</div></div><div class="info-2"><div class="info-item-1">参考：Apple Configuration 2 获取ipa文件 工具 Apple Configurator可以在 Mac 的 App Store 中下载  操作 连接手机  点击 Add -&gt; Apps -&gt; 输入 app 名字 -&gt; 点击添加     等待下载完成, 不要操作    去目录里找 ipa 文件  1~/Library/Group Containers/K36BKF7T3D.group.com.apple.configurator/Library/Caches/Assets/TemporaryItems/MobileApps/36244314-7400-420B-BC2A-AC3C4988F115/414478124/WeChat 8.0.33.ipa  </div></div></div></a><a class="pagination-related" href="/2024/03/18/ios/2024-03-18-ios-xib/" title="ios xib 总结"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-18</div><div class="info-item-2">ios xib 总结</div></div><div class="info-2"><div class="info-item-1">Apple M1 arm64 - IBDesignable error: “incompatible architecture” (have ‘x86_64’, need ‘arm64’)1Failed to render and update auto layout status for ViewController (BYZ-38-t0r): dlopen(ICONButton.app, 0x0001): tried: &#x27;/ICONButton&#x27; (no such file), &#x27;/Library/Developer/CoreSimulator/Volumes/iOS_21E213/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 17.4.simruntime/Contents/Resources/RuntimeRootICONButton.app&#x27; (no such file), &#x27;ICONButton.app&#x27; (mach-o file, but is ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/yxibng.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">yxibng</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yxibng" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Keychain-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">1.</span> <span class="toc-text">Keychain  是什么</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E7%AE%A1%E7%90%86%E6%95%B0%E6%8D%AE%EF%BC%8C%E5%A2%9E%E5%88%A0%E6%9F%A5%E6%94%B9"><span class="toc-number">2.</span> <span class="toc-text">如何管理数据，增删查改</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#SecItemAdd"><span class="toc-number">2.1.</span> <span class="toc-text">SecItemAdd</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0"><span class="toc-number">2.1.1.</span> <span class="toc-text">参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="toc-number">2.1.2.</span> <span class="toc-text">返回值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F"><span class="toc-number">2.1.3.</span> <span class="toc-text">注意</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SecItemCopyMatching"><span class="toc-number">2.2.</span> <span class="toc-text">SecItemCopyMatching</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0-1"><span class="toc-number">2.2.1.</span> <span class="toc-text">参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%94%E5%9B%9E%E5%80%BC-1"><span class="toc-number">2.2.2.</span> <span class="toc-text">返回值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F-1"><span class="toc-number">2.2.3.</span> <span class="toc-text">注意</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SecItemUpdate"><span class="toc-number">2.3.</span> <span class="toc-text">SecItemUpdate</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0-2"><span class="toc-number">2.3.1.</span> <span class="toc-text">参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%94%E5%9B%9E%E5%80%BC-2"><span class="toc-number">2.3.2.</span> <span class="toc-text">返回值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F-2"><span class="toc-number">2.3.3.</span> <span class="toc-text">注意</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SecItemDelete"><span class="toc-number">2.4.</span> <span class="toc-text">SecItemDelete</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0-3"><span class="toc-number">2.4.1.</span> <span class="toc-text">参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%94%E5%9B%9E%E5%80%BC-3"><span class="toc-number">2.4.2.</span> <span class="toc-text">返回值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F-3"><span class="toc-number">2.4.3.</span> <span class="toc-text">注意</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E4%B8%B4%E6%97%B6%E5%BC%95%E7%94%A8%EF%BC%8C%E6%8C%81%E4%B9%85%E5%8C%96%E5%BC%95%E7%94%A8%E5%8F%88%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">2.4.4.</span> <span class="toc-text">什么是临时引用，持久化引用又是什么？</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B"><span class="toc-number">3.</span> <span class="toc-text">示例</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Adding-a-Password-to-the-Keychain"><span class="toc-number">3.1.</span> <span class="toc-text">Adding a Password to the Keychain</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Searching-for-Keychain-Items"><span class="toc-number">3.2.</span> <span class="toc-text">Searching for Keychain Items</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Updating-and-Deleting-Keychain-Items"><span class="toc-number">3.3.</span> <span class="toc-text">Updating and Deleting Keychain Items</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#keychain-group-app-group"><span class="toc-number">4.</span> <span class="toc-text">keychain group &amp; app group</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#keychain-group-%E7%B1%BB%E5%9E%8B"><span class="toc-number">4.1.</span> <span class="toc-text">keychain group 类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#app-group-%E5%92%8C-keychain-group-%E5%8C%BA%E5%88%AB"><span class="toc-number">4.2.</span> <span class="toc-text">app group 和 keychain group 区别</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/16/%E5%BE%AE%E4%BF%A1%20xlog%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="无标题">无标题</a><time datetime="2026-04-16T14:24:32.737Z" title="发表于 2026-04-16 22:24:32">2026-04-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/04/03/cmake/2024-04-03-cmake-ios-code-sign/" title="CMake ios code signing">CMake ios code signing</a><time datetime="2024-04-02T16:00:00.000Z" title="发表于 2024-04-03 00:00:00">2024-04-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/18/ios/2024-03-18-ios-xib/" title="ios xib 总结">ios xib 总结</a><time datetime="2024-03-17T16:00:00.000Z" title="发表于 2024-03-18 00:00:00">2024-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/03/08/debug-xlog-osx/" title="Xcode 源码调试微信 xlog">Xcode 源码调试微信 xlog</a><time datetime="2024-03-07T16:00:00.000Z" title="发表于 2024-03-08 00:00:00">2024-03-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/06/09/c++/2023-06-09-%E4%BD%8D%E5%9F%9F%20%E9%AB%98%E4%BD%8E%E4%BD%8D/" title="结构体位域中的高低位问题">结构体位域中的高低位问题</a><time datetime="2023-06-08T16:00:00.000Z" title="发表于 2023-06-09 00:00:00">2023-06-09</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2022 - 2026 By yxibng</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script src="js/local-search-fix.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="输入关键词搜索..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>
