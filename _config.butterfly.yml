@@ -34,7 +34,7 @@ search:
 local_search:
   enable: true
   preload: false
-  path: /search.xml
+  path: search.xml
   top_n_per_article: 1
   unescape: false
 
@@ -43,7 +43,7 @@ local_search:
 # -----------------------------------------------
 inject:
   bottom:
-    - <script src="/js/local-search-fix.js"></script>
+    - <script src="js/local-search-fix.js"></script>
 
 # -----------------------------------------------
 # 首页 Banner & 打字机 slogan

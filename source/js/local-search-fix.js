@@ -4,6 +4,23 @@
  * Example: "clang" can match "clang-format" reliably.
  */
 (function () {
+  var retryTimer = null
+
+  function fixLocalSearchPath() {
+    if (typeof GLOBAL_CONFIG === 'undefined' || !GLOBAL_CONFIG.localSearch) return
+
+    var cfg = GLOBAL_CONFIG.localSearch
+    var path = (cfg.path || '').toString()
+    var root = (GLOBAL_CONFIG.root || '/').toString()
+
+    if (!path || path.indexOf('/') !== 0) return
+
+    if (root[root.length - 1] !== '/') root += '/'
+    if (root === '/') return
+
+    cfg.path = root + path.replace(/^\/+/, '')
+  }
+
   function normalizeKeywords(keywords) {
     if (!Array.isArray(keywords)) return []
 
@@ -39,10 +56,36 @@
     }
 
     LocalSearch.prototype.__yxPatchedGetResultItems = true
+
+    if (retryTimer) {
+      clearInterval(retryTimer)
+      retryTimer = null
+    }
+
     return true
   }
 
-  if (!patchLocalSearch()) {
-    window.addEventListener('load', patchLocalSearch, { once: true })
+  function ensurePatchedWithRetry() {
+    fixLocalSearchPath()
+
+    if (patchLocalSearch()) return
+
+    if (retryTimer) clearInterval(retryTimer)
+
+    var retryCount = 0
+    retryTimer = setInterval(function () {
+      retryCount += 1
+      if (patchLocalSearch() || retryCount >= 40) {
+        clearInterval(retryTimer)
+        retryTimer = null
+      }
+    }, 250)
+  }
+
+  ensurePatchedWithRetry()
+  window.addEventListener('load', ensurePatchedWithRetry)
+
+  if (typeof document !== 'undefined') {
+    document.addEventListener('pjax:complete', ensurePatchedWithRetry)
   }
 })()
